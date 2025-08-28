@@ -590,18 +590,19 @@ const useUploadManager = () => {
             
             // Check if it's a "large file" that needs processing time
             const isLargeFile = file.size > 50 * 1024 * 1024; // 50MB threshold
+            console.log("file size" + file.size)
             
             if (isLargeFile) {
               processingTimeoutRef.current = setTimeout(() => {
-                setUploadState(UPLOAD_STATES.REPORT_READY); // Change from PROCESSING to REPORT_READY
+                setUploadState(UPLOAD_STATES.PROCESSING); // Change from PROCESSING to REPORT_READY
                 setProcessingTimeEstimate("2-3 minutes");
-              }, 1500);
+              }, 150);
             }
 
             // Set a timeout to show the report card after upload success
             setTimeout(() => {
                 setUploadState(UPLOAD_STATES.REPORT_READY); // Add this new state
-            }, 2000);
+            }, 200);
             
             return 100;
           }
@@ -984,7 +985,7 @@ const App = () => {
                 })
               ] : []),
               // Add the processing message as separate component:
-            ...(uploadManager.uploadState === uploadManager.UPLOAD_STATES.REPORT_READY ? [
+            ...(uploadManager.uploadState === uploadManager.UPLOAD_STATES.PROCESSING ? [
                 React.createElement(ProcessingMessage, {
                 key: 'processing-message'
                 })
