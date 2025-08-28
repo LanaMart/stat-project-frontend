@@ -182,6 +182,74 @@ const DialogProvider = ({ children }) => {
   ]);
 };
 
+
+const ReportCard = ({ projectName, reportTitle, description, onReportClick, onDownload, onDelete }) => {
+    return React.createElement('div', {
+      className: 'bg-white border border-[#f1f0fb] rounded-lg p-4 w-full max-w-[552px] flex flex-col gap-3'
+    }, [
+      // Project tag
+      React.createElement('div', {
+        key: 'project-tag',
+        className: 'bg-[#f1f0fb] px-2.5 py-1 rounded text-[#5e5c7f] text-[11px] self-start',
+        style: { fontFamily: 'Noto Sans', lineHeight: '19.5px' }
+      }, projectName),
+  
+      // Main content line
+      React.createElement('div', {
+        key: 'main-line',
+        className: 'flex items-center justify-between w-full'
+      }, [
+        // Left side - chart icon and report title (clickable)
+        React.createElement('div', {
+          key: 'report-info',
+          className: 'flex items-center gap-2 cursor-pointer',
+          onClick: onReportClick
+        }, [
+          React.createElement(MaterialIcon, {
+            key: 'chart-icon',
+            name: 'insert_chart_outlined',
+            size: 24,
+            className: 'text-[#6a5acd]'
+          }),
+          React.createElement('div', {
+            key: 'report-title',
+            className: 'text-[#6a5acd] text-[13px] font-bold',
+            style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+          }, reportTitle)
+        ]),
+  
+        // Right side - action buttons
+        React.createElement('div', {
+          key: 'actions',
+          className: 'flex items-center gap-2'
+        }, [
+          React.createElement(MaterialIcon, {
+            key: 'download',
+            name: 'download',
+            size: 24,
+            className: 'text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]',
+            onClick: onDownload
+          }),
+          React.createElement(MaterialIcon, {
+            key: 'delete',
+            name: 'delete',
+            size: 24,
+            className: 'text-[#5e5c7f] cursor-pointer hover:text-red-500',
+            onClick: onDelete
+          })
+        ])
+      ]),
+  
+      // Description
+      React.createElement('div', {
+        key: 'description',
+        className: 'text-[#2d2a45] text-[13px]',
+        style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+      }, description)
+    ]);
+};
+
+
 // Hook to use dialogs
 const useDialog = () => {
   const context = React.useContext(DialogContext);
@@ -380,7 +448,8 @@ const UPLOAD_STATES = {
     IDLE: 'idle',
     UPLOADING: 'uploading', 
     SUCCESS: 'success',
-    PROCESSING: 'processing'
+    PROCESSING: 'processing',
+    REPORT_READY: 'report_ready' //I added this as a signal when a file was uploaded
 };
 
 
@@ -475,15 +544,11 @@ const UploadProgress = ({
         ]),
 
         // Bottom section - Progress percentage or processing message
+        // Bottom section - only show progress percentage
         React.createElement('div', {
-        key: 'bottom',
-        className: 'flex items-center justify-end gap-2.5 w-full'
+            key: 'bottom',
+            className: 'flex items-center justify-end gap-2.5 w-full'
         },
-        isProcessing && processingTimeEstimate ? 
-            React.createElement('div', {
-            className: 'text-[#2d2a45] text-[12px]',
-            style: { fontFamily: 'Noto Sans', lineHeight: '19.5px' }
-            }, `Large file detected. Processing may take ${processingTimeEstimate}`) :
             React.createElement('div', {
             className: 'text-[12px] text-center',
             style: { 
@@ -528,10 +593,15 @@ const useUploadManager = () => {
             
             if (isLargeFile) {
               processingTimeoutRef.current = setTimeout(() => {
-                setUploadState(UPLOAD_STATES.PROCESSING);
+                setUploadState(UPLOAD_STATES.REPORT_READY); // Change from PROCESSING to REPORT_READY
                 setProcessingTimeEstimate("2-3 minutes");
               }, 1500);
             }
+
+            // Set a timeout to show the report card after upload success
+            setTimeout(() => {
+                setUploadState(UPLOAD_STATES.REPORT_READY); // Add this new state
+            }, 2000);
             
             return 100;
           }
@@ -578,6 +648,47 @@ const useUploadManager = () => {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { UploadProgress, useUploadManager, UPLOAD_STATES };
 }
+
+
+// New separate component for the "Please wait" message
+const ProcessingMessage = () => {
+    return React.createElement('div', {
+      className: 'bg-white border border-[#e5e3f7] rounded-[8px] p-4 w-full max-w-[552px]'
+    }, [
+      // Spinner section
+      React.createElement('div', {
+        key: 'spinner-section',
+        className: 'flex items-center justify-center gap-2.5 mb-2.5 w-full'
+      },
+        React.createElement('div', {
+          className: 'relative w-6 h-6'
+        }, [
+          // You can use a simple CSS spinner or Material Icon
+          React.createElement(MaterialIcon, {
+            key: 'spinner',
+            name: 'refresh',
+            size: 24,
+            className: 'text-[#6a5acd] animate-spin'
+          })
+        ])
+      ),
+  
+      // Main message
+      React.createElement('div', {
+        key: 'main-message',
+        className: 'text-[#2d2a45] text-[14px] font-semibold text-center w-full mb-2.5',
+        style: { fontFamily: 'Noto Sans', lineHeight: '21px' }
+      }, 'Please wait we read your data!'),
+  
+      // Sub message
+      React.createElement('div', {
+        key: 'sub-message',
+        className: 'text-[#5e5c7f] text-[13px] text-center w-full',
+        style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+      }, 'It could take a couple of seconds')
+    ]);
+};
+
 
 
 // Drag and Drop Zone Component
@@ -871,7 +982,13 @@ const App = () => {
                   onCancel: uploadManager.cancelUpload,
                   processingTimeEstimate: uploadManager.processingTimeEstimate
                 })
-              ] : [])
+              ] : []),
+              // Add the processing message as separate component:
+            ...(uploadManager.uploadState === uploadManager.UPLOAD_STATES.REPORT_READY ? [
+                React.createElement(ProcessingMessage, {
+                key: 'processing-message'
+                })
+            ] : [])
       ),
 
       // Footer
