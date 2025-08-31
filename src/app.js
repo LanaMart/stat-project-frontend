@@ -70,7 +70,7 @@ const App = () => {
         }
       },
         React.createElement('div', {
-            className: 'text-[#2d2a45] text-[13px] text-center leading-5 h-[71px] w-full',
+            className: 'text-[#2d2a45] text-[16px] text-center leading-5 h-[71px] w-full',
             style: { fontFamily: 'Noto Sans' }
         }, [
             React.createElement('p', {
