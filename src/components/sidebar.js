@@ -1,14 +1,32 @@
 const React = require('react');
 const { MyLastProjectsSection } = require('./projects.js');
+const { QPushButton } = require('./button.js');
+const { MaterialIcon } = require('./button.js');
 
 
 const StatBridgeLogo = () => {
-    return React.createElement('img', {
-      src: '/Users/eli/Repo/gui/electron/assets/images/logo.png',
-      alt: 'StatBridge Logo',
-      className: 'w-[55%] mx-auto object-contain rounded-lg'
-    });
-  };
+  return React.createElement('img', {
+    src: '/Users/eli/Repo/gui/electron/assets/images/logo.png',
+    alt: 'StatBridge Logo',
+    className: 'w-[55%] mx-auto object-contain rounded-lg'
+  });
+};
+
+
+// TODO :: entirely replace this with the other logic to call QPUSHbutton and get this one!
+const QPushButtonWithPlus = ({ onClick }) => {
+  return React.createElement('button', {
+      className: 'bg-[#6a5acd] h-9 px-3 py-2.5 rounded flex items-center justify-center gap-2 hover-effect cursor-pointer',
+      onClick: onClick
+  }, [
+      React.createElement(MaterialIcon, {
+      key: 'plus-icon',
+      name: 'add',
+      size: 24,
+      className: 'text-[#ebfaff]'
+      })
+  ]);
+};
 
 
 const Sidebar = ({ isOpen, onToggle }) => {

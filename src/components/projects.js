@@ -1,5 +1,6 @@
 const React = require('react');
 const { useDialog } = require('./dialog.js');
+const { MaterialIcon } = require('./button.js');
 
 
 
@@ -104,6 +105,72 @@ const MyLastProjectsSection = () => {
     ]);
   };
 
+
+  const ReportCard = ({ projectName, reportTitle, description, onReportClick, onDownload, onDelete }) => {
+    return React.createElement('div', {
+      className: 'bg-white border border-[#f1f0fb] rounded-lg p-4 w-full max-w-[552px] flex flex-col gap-3'
+    }, [
+      // Project tag
+      React.createElement('div', {
+        key: 'project-tag',
+        className: 'bg-[#f1f0fb] px-2.5 py-1 rounded text-[#5e5c7f] text-[11px] self-start',
+        style: { fontFamily: 'Noto Sans', lineHeight: '19.5px' }
+      }, projectName),
+  
+      // Main content line
+      React.createElement('div', {
+        key: 'main-line',
+        className: 'flex items-center justify-between w-full'
+      }, [
+        // Left side - chart icon and report title (clickable)
+        React.createElement('div', {
+          key: 'report-info',
+          className: 'flex items-center gap-2 cursor-pointer',
+          onClick: onReportClick
+        }, [
+          React.createElement(MaterialIcon, {
+            key: 'chart-icon',
+            name: 'insert_chart_outlined',
+            size: 24,
+            className: 'text-[#6a5acd]'
+          }),
+          React.createElement('div', {
+            key: 'report-title',
+            className: 'text-[#6a5acd] text-[13px] font-bold',
+            style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+          }, reportTitle)
+        ]),
+  
+        // Right side - action buttons
+        React.createElement('div', {
+          key: 'actions',
+          className: 'flex items-center gap-2'
+        }, [
+          React.createElement(MaterialIcon, {
+            key: 'download',
+            name: 'download',
+            size: 24,
+            className: 'text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]',
+            onClick: onDownload
+          }),
+          React.createElement(MaterialIcon, {
+            key: 'delete',
+            name: 'delete',
+            size: 24,
+            className: 'text-[#5e5c7f] cursor-pointer hover:text-red-500',
+            onClick: onDelete
+          })
+        ])
+      ]),
+  
+      // Description
+      React.createElement('div', {
+        key: 'description',
+        className: 'text-[#2d2a45] text-[13px]',
+        style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+      }, description)
+    ]);
+};
 
 
 module.exports = {

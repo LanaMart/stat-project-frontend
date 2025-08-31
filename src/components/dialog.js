@@ -1,4 +1,5 @@
 const React = require('react');
+const { MaterialIcon } = require('./button.js');
 
 
 // Hook to use dialogs
