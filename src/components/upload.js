@@ -41,7 +41,7 @@ const UploadProgress = ({
     const progressWidth = isSuccess ? '100%' : `${Math.min(progress, 100)}%`;
 
     return React.createElement('div', {
-        className: 'bg-white border border-[#e5e3f7] rounded-[8px] p-4 w-full max-w-[552px]',
+        className: 'bg-white border border-[#e5e3f7] rounded-[8px] p-4 w-[600px]',
         style: { border: '1px solid #e5e3f7' }
     }, [
         // Top section - File info and icon
@@ -324,7 +324,7 @@ const DragDropZone = ({ onFileSelect, uploadManager }) => {
     };
   
     return React.createElement('div', {
-      className: 'bg-white p-3 rounded-[10px] w-[395px]',
+      className: 'bg-white p-3 rounded-[10px] w-[600px]',
       style: { border: '1px solid #f1f0fb' }
     }, [
       React.createElement('div', {
@@ -344,7 +344,7 @@ const DragDropZone = ({ onFileSelect, uploadManager }) => {
         // Upload icon and text
         React.createElement('div', {
           key: 'content',
-          className: 'flex flex-col items-center gap-3 w-full'
+          className: 'flex flex-col items-center gap-3 w-[600px]'
         }, [
           React.createElement(MaterialIcon, {
             key: 'upload-icon',

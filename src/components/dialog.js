@@ -14,11 +14,11 @@ const useDialog = () => {
   
 const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
       return React.createElement('div', {
-        className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50',
+        className: 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-[2000]',
         onClick: onClose
       }, 
         React.createElement('div', {
-          className: 'bg-white rounded-lg w-[400px] flex flex-col',
+          className: 'bg-white rounded-lg w-[500px] flex flex-col mt-8',
           style: { border: '1px solid #f1f0fb' },
           onClick: (e) => e.stopPropagation()
         }, [
@@ -53,7 +53,7 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
             className: 'bg-[#f5f6f7] px-6 py-4'
           },
             React.createElement('div', {
-              className: 'text-[#2d2a45] text-[13px]',
+              className: 'text-[#2d2a45] text-[16px] break-words',
               style: { fontFamily: 'Noto Sans' }
             }, `Are you sure you want to delete "${projectName}" project?`)
           ),

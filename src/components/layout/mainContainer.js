@@ -5,7 +5,8 @@ const ContentContainer = ({ children }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col"
+      className: "flex flex-col",
+      style: { width:'100%', height:'100%' }
     },
     children
   );
