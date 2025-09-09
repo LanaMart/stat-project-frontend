@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
     {
       className: `relative top-14 h-screen bg-white p-[10px] flex flex-col gap-5 ${
         isOpen
-          ? "w-[220px] bg-green-100"
+          ? "w-[340px] bg-green-100"
           : "w-[65px] overflow-hidden bg-red-100"
       } left-0`, // Add left-0 to fix to left edge
       style: { border: "1px solid #f1f0fb", zIndex: 1000 },
