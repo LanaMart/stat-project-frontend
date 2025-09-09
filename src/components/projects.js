@@ -111,18 +111,6 @@ const MyLastProjectsSection = ({ newProject }) => {
     }
   }, [newProject, navigate]);
 
-  // Load currentProject from localStorage on mount
-  React.useEffect(() => {
-    try {
-      const currentProject = JSON.parse(localStorage.getItem("currentProject"));
-      if (currentProject) {
-        setSelectedProject(currentProject);
-      }
-    } catch (error) {
-      console.error("Error loading currentProject from localStorage:", error);
-    }
-  }, []);
-
   const handleProjectSelect = (project) => {
     console.log("Selected project:", project);
     setSelectedProject(project);
@@ -164,7 +152,7 @@ const MyLastProjectsSection = ({ newProject }) => {
               className: "text-[#8a7bea] text-[11px] font-normal",
               style: { fontFamily: "Noto Sans", lineHeight: "19.5px" },
             },
-            "MY LAST PROJECTS"
+            "MY PROJECTS"
           ),
           React.createElement(MaterialIcon, {
             key: "arrow",

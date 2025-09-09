@@ -13,7 +13,7 @@ const ProjectViewPage = ({ project }) => {
   const { navigate } = useRouter();
   const uploadManager = useUploadManager();
 
-  // Получаем проект из параметров или из localStorage
+  // Get the project from parameters or from localStorage
   const currentProject = React.useMemo(() => {
     if (project) return project;
 
@@ -26,7 +26,7 @@ const ProjectViewPage = ({ project }) => {
     }
   }, [project]);
 
-  // Если проект не найден, показываем сообщение об ошибке
+  // If the project is not found, show an error message
   if (!currentProject) {
     return React.createElement(
       "div",
@@ -75,7 +75,7 @@ const ProjectViewPage = ({ project }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-6",
+      className: "flex flex-col gap-6 min-h-screen",
     },
     [
       // Header with back button
@@ -115,15 +115,19 @@ const ProjectViewPage = ({ project }) => {
           ),
         ]
       ),
-
-      // Drag and Drop Zone
-      React.createElement(DragDropZone, {
-        key: "drag-drop",
-        uploadManager: uploadManager,
-        onFileSelect: uploadManager.startUpload,
-      }),
-
-      // Upload Progress
+      // Centered Drag and Drop Zone
+      React.createElement(
+        "div",
+        {
+          key: "drag-drop-container",
+          className: "flex items-center justify-center flex-col gap-4",
+        },
+        React.createElement(DragDropZone, {
+          key: "drag-drop",
+          uploadManager: uploadManager,
+          onFileSelect: uploadManager.startUpload,
+        }),
+           // Upload Progress
       uploadManager.uploadState !== uploadManager.UPLOAD_STATES.IDLE &&
         React.createElement(UploadProgress, {
           key: "upload-progress",
@@ -134,6 +138,7 @@ const ProjectViewPage = ({ project }) => {
           onCancel: uploadManager.cancelUpload,
           processingTimeEstimate: uploadManager.processingTimeEstimate,
         }),
+      ),
 
       // Processing Message
       uploadManager.uploadState === uploadManager.UPLOAD_STATES.PROCESSING &&
