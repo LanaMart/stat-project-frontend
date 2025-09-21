@@ -4,3 +4,14 @@ node_modules/
 dist/
 build/
 .env
+src/styles/output.css
+
+# Electron specific
+release/
+app/dist/
+app/build/
+
+# Cache
+.cache/
+.parcel-cache/
+src/styles/output.css

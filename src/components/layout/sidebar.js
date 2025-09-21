@@ -12,29 +12,6 @@ const StatBridgeLogo = () => {
   });
 };
 
-const QPushButtonWithPlus = ({ onClick }) => {
-  return React.createElement(
-    "button",
-    {
-      className:
-        "bg-[#6a5acd] h-9 px-3 py-2.5 rounded flex items-center justify-center gap-2 hover-effect cursor-pointer",
-      onClick: () => {
-        console.log("Plus button clicked");
-        onClick();
-      },
-      key: "plus-button",
-    },
-    [
-      React.createElement(MaterialIcon, {
-        key: "plus-icon",
-        name: "add",
-        size: 24,
-        className: "text-[#ebfaff]",
-      }),
-    ]
-  );
-};
-
 const Sidebar = ({ isOpen, onToggle }) => {
   const [projectName, setProjectName] = React.useState("");
   const [newProject, setNewProject] = React.useState(null);
@@ -68,12 +45,12 @@ const Sidebar = ({ isOpen, onToggle }) => {
   return React.createElement(
     "div",
     {
-      className: `relative top-14 h-screen bg-white p-[10px] flex flex-col gap-5 ${
+      className: `relative top-14 h-screen bg-stat-white p-2sm flex flex-col gap-2sm ${
         isOpen
-          ? "w-[340px] bg-green-100"
-          : "w-[65px] overflow-hidden bg-red-100"
-      } left-0`, // Add left-0 to fix to left edge
-      style: { border: "1px solid #f1f0fb", zIndex: 1000 },
+          ? "w-[340px] bg-stat-accent-green"
+          : "w-[65px] overflow-hidden bg-stat-error-100"
+      } left-0`,
+      style: { border: "1px solid var(--stat-primary-50)", zIndex: 1000 },
       onClick: (e) => console.log("Sidebar clicked, target:", e.target),
     },
     [
@@ -82,7 +59,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         {
           key: "toggle",
           className:
-            "bg-white h-[30px] flex items-center justify-end px-2.5 rounded cursor-pointer sidebar-toggle",
+            "bg-stat-white h-1sm flex items-center justify-end px-1sm rounded-sm cursor-pointer sidebar-toggle",
           style: { zIndex: 1000, position: "relative" },
           onClick: (e) => {
             console.log(
@@ -98,7 +75,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           React.createElement(MaterialIcon, {
             key: "toggle-icon",
             name: isOpen ? "menu_open" : "menu",
-            className: "text-gray-700",
+            className: "stat-primary text-base",
             style: { fontSize: 24, cursor: "pointer" },
           }),
         ]
@@ -109,7 +86,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "header",
-                className: "flex flex-col gap-[5px] pb-[5px]",
+                className: "flex flex-col gap-1sm pb-1sm",
               },
               [
                 React.createElement(StatBridgeLogo, { key: "logo" }),
@@ -118,8 +95,8 @@ const Sidebar = ({ isOpen, onToggle }) => {
                   {
                     key: "tagline",
                     className:
-                      "text-[#5e5c7f] text-[16px] font-semibold leading-6 text-center w-4/5 mx-auto",
-                    style: { fontFamily: "Noto Sans" },
+                      "text-stat-font-secondary text-lg font-semibold leading-6 text-center w-4/5 mx-auto",
+                    style: { fontFamily: "var(--noto)" },
                   },
                   "Where Business meets Data"
                 ),
@@ -129,21 +106,21 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "projects",
-                className: "flex flex-col gap-4",
+                className: "flex flex-col gap-md",
               },
               [
                 React.createElement(
                   "div",
                   {
                     key: "content",
-                    className: "flex flex-col gap-2.5",
+                    className: "flex flex-col gap-2sm",
                   },
                   [
                     React.createElement(
                       "div",
                       {
                         key: "input-wrapper",
-                        className: "flex flex-col gap-[3px] w-full",
+                        className: "flex flex-col gap-2xs w-full",
                       },
                       [
                         React.createElement(
@@ -151,7 +128,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                           {
                             key: "input-container",
                             className:
-                              "project-input flex items-center justify-between px-2.5 py-4 rounded border border-[#e5e3f7] bg-white cursor-text",
+                              "project-input flex items-center justify-between px-1sm py-md rounded-md border border-stat-primary-100 bg-stat-white cursor-text",
                           },
                           [
                             React.createElement("input", {
@@ -170,16 +147,16 @@ const Sidebar = ({ isOpen, onToggle }) => {
                                 }
                               },
                               className:
-                                "flex-1 bg-transparent outline-none text-[13px] text-[rgba(94,92,127,0.51)] placeholder-[rgba(94,92,127,0.51)]",
+                                "flex-1 bg-transparent outline-none text-sm text-stat-font placeholder-stat-font-secondary",
                               style: {
-                                fontFamily: "Noto Sans",
+                                fontFamily: "var(--noto)",
                                 lineHeight: "20px",
                               },
                             }),
                             React.createElement(MaterialIcon, {
                               key: "edit-icon",
                               name: "edit",
-                              className: "text-[#6a5acd]",
+                              className: "text-stat-primary",
                             }),
                           ]
                         ),
@@ -196,6 +173,10 @@ const Sidebar = ({ isOpen, onToggle }) => {
                           QPushButton,
                           {
                             key: "save-button",
+                            style: {
+                              appearance: "none",
+                              WebkitAppearance: "none",
+                            },
                             onClick: () => {
                               console.log(
                                 "Save button clicked, projectName:",
@@ -209,11 +190,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
                               key: "check-icon",
                               name: "check",
                               size: 20,
-                              className: "text-[#ebfaff]",
+                              className: "text-stat-old-bg",
                             }),
                             React.createElement(
                               "span",
-                              { key: "text" },
+                              { key: "text", className: "text-base" },
                               "Save"
                             ),
                           ]
@@ -229,15 +210,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
               newProject: newProject,
             }),
           ]
-        : [
-            React.createElement(QPushButtonWithPlus, {
-              key: "plus-button",
-              onClick: () => {
-                console.log("Plus button clicked");
-                onToggle();
-              },
-            }),
-          ]),
+        : []),
     ]
   );
 };
