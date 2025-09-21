@@ -66,11 +66,13 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
             React.createElement('button', {
               key: 'cancel',
               className: 'px-3 py-2.5 text-[#6a5acd] hover:bg-gray-50 rounded',
+              style: { appearance: 'none', WebkitAppearance: 'none' },
               onClick: onClose
             }, 'Cancel'),
             React.createElement('button', {
               key: 'delete',
               className: 'bg-[#6a5acd] text-white px-3 py-2.5 rounded flex items-center gap-2',
+              style: { appearance: 'none', WebkitAppearance: 'none' }, 
               onClick: () => { onConfirm(); onClose(); }
             }, [
               React.createElement(MaterialIcon, { key: 'check', name: 'check', size: 20 }),

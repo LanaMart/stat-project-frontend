@@ -8,7 +8,7 @@ const QPushButton = ({ onClick, children, className = '' }) => {
         {
             onClick,
             className: `bg-[#6a5acd] text-white h-9 px-3 py-2.5 rounded flex items-center justify-center gap-2 hover-effect cursor-pointer ${className}`,
-            style: { fontFamily: 'Noto Sans', lineHeight: '20px' }
+            style: { fontFamily: 'Noto Sans', lineHeight: '20px', appearance: "none", WebkitAppearance: "none" }
         },
         children
     );
