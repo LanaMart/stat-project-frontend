@@ -15,7 +15,7 @@ const ProjectsList = ({
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full overflow-y-auto max-h-[200px]",
+      className: "flex flex-col gap-[3px] w-full overflow-y-auto",
     },
     projects.map((project) =>
       React.createElement(
@@ -39,11 +39,11 @@ const ProjectsList = ({
             [
               React.createElement(MaterialIcon, {
                 key: "folder",
-                name: "folder_open",
+                name: "folder",
                 className:
                   selectedProject && selectedProject.id === project.id
-                    ? "text-[#2d2a45]"
-                    : "text-[#5e5c7f]",
+                    ? "text-[#2d2a45] material-icons-outlined "
+                    : "text-[#5e5c7f] material-icons-outlined ",
               }),
               React.createElement(
                 "span",
@@ -63,7 +63,8 @@ const ProjectsList = ({
           React.createElement(MaterialIcon, {
             key: "delete",
             name: "delete",
-            className: "text-[#5e5c7f] hover:text-red-500 cursor-pointer",
+            className:
+              "material-icons-outlined text-stat-primary hover:text-red-500 cursor-pointer",
             onClick: (e) => {
               e.stopPropagation();
               showDialog({
@@ -133,7 +134,7 @@ const MyLastProjectsSection = ({ newProject }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full",
+      className: `flex flex-col gap-[3px] w-full ${isExpanded ? "flex-1" : ""}`,
     },
     [
       React.createElement(
@@ -141,7 +142,7 @@ const MyLastProjectsSection = ({ newProject }) => {
         {
           key: "header",
           className:
-            "flex items-center justify-between px-2.5 py-2 cursor-pointer",
+            "flex items-center justify-between px-2xs py-3md cursor-pointer",
           onClick: () => setIsExpanded(!isExpanded),
         },
         [
@@ -251,7 +252,8 @@ const ReportCard = ({
                 key: "delete",
                 name: "delete",
                 size: 24,
-                className: "text-[#5e5c7f] cursor-pointer hover:text-red-500",
+                className:
+                  " material-icons-outlined text-[#5e5c7f] cursor-pointer hover:text-red-500",
                 onClick: onDelete,
               }),
             ]

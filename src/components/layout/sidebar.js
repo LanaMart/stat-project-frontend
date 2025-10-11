@@ -45,12 +45,12 @@ const Sidebar = ({ isOpen, onToggle }) => {
   return React.createElement(
     "div",
     {
-      className: `relative top-14 h-screen bg-stat-white p-2sm flex flex-col gap-2sm ${
+      className: `relative top-14 h-screen bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50  ${
         isOpen
           ? "w-[340px] bg-stat-accent-green"
           : "w-[65px] overflow-hidden bg-stat-error-100"
       } left-0`,
-      style: { border: "1px solid var(--stat-primary-50)", zIndex: 1000 },
+      style: { zIndex: 1000 },
       onClick: (e) => console.log("Sidebar clicked, target:", e.target),
     },
     [
@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         {
           key: "toggle",
           className:
-            "bg-stat-white h-1sm flex items-center justify-end px-1sm rounded-sm cursor-pointer sidebar-toggle",
+            "h-3lg flex items-center justify-end text-stat-primary cursor-pointer text-xxl",
           style: { zIndex: 1000, position: "relative" },
           onClick: (e) => {
             console.log(
@@ -75,8 +75,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           React.createElement(MaterialIcon, {
             key: "toggle-icon",
             name: isOpen ? "menu_open" : "menu",
-            className: "stat-primary text-base",
-            style: { fontSize: 24, cursor: "pointer" },
+            className: "text-stat-primary cursor-pointer, text-xxl",
           }),
         ]
       ),
@@ -95,8 +94,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                   {
                     key: "tagline",
                     className:
-                      "text-stat-font-secondary text-lg font-semibold leading-6 text-center w-4/5 mx-auto",
-                    style: { fontFamily: "var(--noto)" },
+                      "text-stat-font-secondary text-lg font-semibold leading-6 text-center w-4/5 mx-auto font-noto",
                   },
                   "Where Business meets Data"
                 ),
@@ -106,7 +104,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "projects",
-                className: "flex flex-col gap-md",
+                className: "flex flex-col gap-3md",
               },
               [
                 React.createElement(
@@ -128,7 +126,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                           {
                             key: "input-container",
                             className:
-                              "project-input flex items-center justify-between px-1sm py-md rounded-md border border-stat-primary-100 bg-stat-white cursor-text",
+                              "flex items-center justify-between px-2sm py-3md rounded-sm border border-stat-primary-100 bg-stat-white cursor-text",
                           },
                           [
                             React.createElement("input", {
@@ -147,16 +145,13 @@ const Sidebar = ({ isOpen, onToggle }) => {
                                 }
                               },
                               className:
-                                "flex-1 bg-transparent outline-none text-sm text-stat-font placeholder-stat-font-secondary",
-                              style: {
-                                fontFamily: "var(--noto)",
-                                lineHeight: "20px",
-                              },
+                                "flex-1 bg-transparent outline-none text-sm text-stat-font placeholder:text-grey-400 font-noto",
                             }),
                             React.createElement(MaterialIcon, {
                               key: "edit-icon",
                               name: "edit",
-                              className: "text-stat-primary",
+                              className:
+                                "material-icons-outlined text-stat-primary",
                             }),
                           ]
                         ),
@@ -205,10 +200,20 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 ),
               ]
             ),
-            React.createElement(MyLastProjectsSection, {
-              key: "my-last-projects",
-              newProject: newProject,
-            }),
+            React.createElement(
+              "div",
+              {
+                key: "projects-scroll-container",
+                className: "flex-1 overflow-y-auto",
+                style: { maxHeight: "calc(100vh - 300px)" },
+              },
+              [
+                React.createElement(MyLastProjectsSection, {
+                  key: "my-last-projects",
+                  newProject: newProject,
+                }),
+              ]
+            ),
           ]
         : []),
     ]

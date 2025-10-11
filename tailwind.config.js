@@ -46,10 +46,10 @@ module.exports = {
         "xs": "6px",
         "1sm": "8px",
         "2sm": "10px",
-        "md": "12px",
-        "lg": "16px",
-        "xl": "20px",
-        "2xl": "24",
+        "3md": "12px",
+        "3lg": "16px",
+        "3xl": "20px",
+        "4xl": "24px",
       },
       fontSize: {
         xs: ["12px", "16px"],
@@ -57,6 +57,7 @@ module.exports = {
         base: ["16px", "24px"],
         lg: ["18px", "28px"],
         xl: ["20px", "32px"],
+        xxl: ["24px", "36px"],
       },
       borderRadius: {
         none: "0px",
@@ -65,6 +66,9 @@ module.exports = {
         lg: "12px",
         xl: "16px",
         full: "9999px", // Custom rounded values beyond defaults
+      },
+      borderColor: {
+        "stat-primary-50": "#f1f0fb",
       },
     },
   },
