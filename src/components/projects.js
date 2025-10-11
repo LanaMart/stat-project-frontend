@@ -15,7 +15,7 @@ const ProjectsList = ({
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full overflow-y-auto",
+      className: "flex flex-col gap-[3px] w-full",
     },
     projects.map((project) =>
       React.createElement(
@@ -91,12 +91,11 @@ const MyLastProjectsSection = ({ newProject }) => {
       return [];
     }
   });
-  const { navigate } = useRouter(); // Add useRouter
+  const { navigate } = useRouter();
 
   // Handle new project and auto-expand
   React.useEffect(() => {
     if (newProject) {
-      console.log("New project received:", newProject);
       setProjects((prevProjects) => {
         const updatedProjects = [
           newProject,
@@ -108,33 +107,36 @@ const MyLastProjectsSection = ({ newProject }) => {
       setSelectedProject(newProject);
       localStorage.setItem("currentProject", JSON.stringify(newProject));
       setIsExpanded(true);
-      navigate("project-view", { project: newProject }); // Ensure navigation for new project
+      navigate("project-view", { project: newProject });
     }
   }, [newProject, navigate]);
 
   const handleProjectSelect = (project) => {
-    console.log("Selected project:", project);
     setSelectedProject(project);
     localStorage.setItem("currentProject", JSON.stringify(project));
-    navigate("project-view", { project }); // Navigate to project-view with selected project
+    navigate("project-view", { project });
   };
 
   const handleProjectDelete = (projectToDelete) => {
-    console.log("Deleting project:", projectToDelete);
     const updatedProjects = projects.filter((p) => p.id !== projectToDelete.id);
     setProjects(updatedProjects);
     localStorage.setItem("projects", JSON.stringify(updatedProjects));
     if (selectedProject && selectedProject.id === projectToDelete.id) {
       setSelectedProject(null);
       localStorage.removeItem("currentProject");
-      navigate("welcome"); // Navigate to welcome if current project is deleted
+      navigate("welcome");
     }
   };
 
   return React.createElement(
     "div",
     {
-      className: `flex flex-col gap-[3px] w-full ${isExpanded ? "flex-1" : ""}`,
+      className: "flex flex-col gap-[3px] w-full h-full min-h-0",
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      },
     },
     [
       React.createElement(
@@ -142,7 +144,7 @@ const MyLastProjectsSection = ({ newProject }) => {
         {
           key: "header",
           className:
-            "flex items-center justify-between px-2xs py-3md cursor-pointer",
+            "flex items-center justify-between px-2xs py-3md cursor-pointer flex-shrink-0",
           onClick: () => setIsExpanded(!isExpanded),
         },
         [
@@ -164,13 +166,26 @@ const MyLastProjectsSection = ({ newProject }) => {
       ),
       ...(isExpanded
         ? [
-            React.createElement(ProjectsList, {
-              key: "projects-list",
-              projects: projects,
-              selectedProject: selectedProject,
-              onProjectSelect: handleProjectSelect,
-              onProjectDelete: handleProjectDelete,
-            }),
+            React.createElement(
+              "div",
+              {
+                key: "projects-list-wrapper",
+                className: "flex-1 min-h-0 overflow-y-auto",
+                style: {
+                  overflowY: "auto",
+                  WebkitOverflowScrolling: "touch",
+                },
+              },
+              [
+                React.createElement(ProjectsList, {
+                  key: "projects-list",
+                  projects: projects,
+                  selectedProject: selectedProject,
+                  onProjectSelect: handleProjectSelect,
+                  onProjectDelete: handleProjectDelete,
+                }),
+              ]
+            ),
           ]
         : []),
     ]

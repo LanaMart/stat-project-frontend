@@ -24,7 +24,6 @@ const Sidebar = ({ isOpen, onToggle }) => {
         name: projectName.trim(),
         createdAt: new Date().toISOString(),
       };
-      console.log(`Creating new project: "${projectName}"`);
       const existingProjects = JSON.parse(
         localStorage.getItem("projects") || "[]"
       );
@@ -34,24 +33,20 @@ const Sidebar = ({ isOpen, onToggle }) => {
       setProjectName("");
       setNewProject(newProject);
       navigate("project-view", { project: newProject });
-      console.log(
-        `Project "${projectName}" created and navigated to project-view!`
-      );
-    } else {
-      console.log("Project name is empty");
     }
   };
 
   return React.createElement(
     "div",
     {
-      className: `relative top-14 h-screen bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50  ${
-        isOpen
-          ? "w-[340px] bg-stat-accent-green"
-          : "w-[65px] overflow-hidden bg-stat-error-100"
+      className: `relative top-14 bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 ${
+        isOpen ? "w-[340px] bg-stat-accent-green" : "w-[65px] bg-stat-error-100"
       } left-0`,
-      style: { zIndex: 1000 },
-      onClick: (e) => console.log("Sidebar clicked, target:", e.target),
+      style: {
+        zIndex: 1000,
+        height: "calc(100vh - 56px)",
+        maxHeight: "calc(100vh - 56px)",
+      },
     },
     [
       React.createElement(
@@ -59,17 +54,8 @@ const Sidebar = ({ isOpen, onToggle }) => {
         {
           key: "toggle",
           className:
-            "h-3lg flex items-center justify-end text-stat-primary cursor-pointer text-xxl",
-          style: { zIndex: 1000, position: "relative" },
-          onClick: (e) => {
-            console.log(
-              "Toggle clicked, isOpen:",
-              isOpen,
-              "event target:",
-              e.target
-            );
-            onToggle();
-          },
+            "h-3lg flex items-center justify-end text-stat-primary cursor-pointer text-xxl flex-shrink-0",
+          onClick: onToggle,
         },
         [
           React.createElement(MaterialIcon, {
@@ -85,7 +71,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "header",
-                className: "flex flex-col gap-1sm pb-1sm",
+                className: "flex flex-col gap-1sm pb-1sm flex-shrink-0",
               },
               [
                 React.createElement(StatBridgeLogo, { key: "logo" }),
@@ -104,7 +90,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "projects",
-                className: "flex flex-col gap-3md",
+                className: "flex flex-col gap-3md flex-shrink-0",
               },
               [
                 React.createElement(
@@ -134,12 +120,8 @@ const Sidebar = ({ isOpen, onToggle }) => {
                               type: "text",
                               placeholder: "Create new project",
                               value: projectName,
-                              onChange: (e) => {
-                                console.log("Input changed:", e.target.value);
-                                setProjectName(e.target.value);
-                              },
+                              onChange: (e) => setProjectName(e.target.value),
                               onKeyDown: (e) => {
-                                console.log("Key pressed:", e.key);
                                 if (e.key === "Enter") {
                                   handleCreateProject();
                                 }
@@ -172,13 +154,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                               appearance: "none",
                               WebkitAppearance: "none",
                             },
-                            onClick: () => {
-                              console.log(
-                                "Save button clicked, projectName:",
-                                projectName
-                              );
-                              handleCreateProject();
-                            },
+                            onClick: handleCreateProject,
                           },
                           [
                             React.createElement(MaterialIcon, {
@@ -204,8 +180,12 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "projects-scroll-container",
-                className: "flex-1 overflow-y-auto",
-                style: { maxHeight: "calc(100vh - 300px)" },
+                className: "flex-1 min-h-0",
+                style: {
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                },
               },
               [
                 React.createElement(MyLastProjectsSection, {

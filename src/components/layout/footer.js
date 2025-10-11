@@ -6,7 +6,7 @@ const Footer = () => {
     "div",
     {
       className:
-        "absolute bottom-0 left-0 w-full h-14 bg-[#f1f0fb] border-t border-[#e5e3f7] rounded-b-lg flex items-center justify-between px-4",
+        "absolute bottom-0 left-0 w-full h-14 bg-stat-primary-50 border-t border-stat-primary-100 rounded-b-lg flex items-center justify-between px-3md",
       style: { zIndex: 1001 }, // Higher than sidebar's z-index: 1000
       onClick: (e) => console.log("Footer clicked, target:", e.target), // Debug click
     },
@@ -15,31 +15,16 @@ const Footer = () => {
         "div",
         {
           key: "version",
-          className: "text-[#5e5c7f] text-[12px]",
-          style: { fontFamily: "Noto Sans" },
+          className: "flex items-center gap-2 text-stat-font text-sm font-noto",
         },
-        "Version 1.0.0"
-      ),
-      React.createElement(
-        "div",
-        {
-          key: "actions",
-          className: "flex items-center gap-2",
-        },
-        [
-          React.createElement(MaterialIcon, {
-            key: "support",
-            name: "support_agent",
-            className: "text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]",
-            onClick: () => console.log("Support icon clicked"),
-          }),
-          React.createElement(MaterialIcon, {
-            key: "settings",
-            name: "settings",
-            className: "text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]",
-            onClick: () => console.log("Settings icon clicked"),
-          }),
-        ]
+        React.createElement(MaterialIcon, {
+          key: "info",
+          name: "info",
+          className:
+            "material-icons-outlined text-stat-primary cursor-pointer hover:text-stat-primary-800",
+          onClick: () => console.log("Support icon clicked"),
+        }),
+        "About the app"
       ),
     ]
   );
