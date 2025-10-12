@@ -15,7 +15,8 @@ const Footer = () => {
         "div",
         {
           key: "version",
-          className: "flex items-center gap-2 text-stat-font text-sm font-noto",
+          className:
+            "flex items-center gap-1sm text-stat-font text-sm font-noto",
         },
         React.createElement(MaterialIcon, {
           key: "info",

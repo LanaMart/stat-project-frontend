@@ -33,7 +33,7 @@ const WelcomePage = () => {
     "div",
     {
       className:
-        "relative flex flex-col items-center justify-start gap-4 w-full max-w-[414px] mx-auto px-4 overflow-hidden pt-4xl",
+        "relative flex flex-col items-center justify-start gap-3lg w-full max-w-[414px] mx-auto px-2xs overflow-hidden pt-4xl",
     },
     [
       // Animated background particles
@@ -95,7 +95,7 @@ const WelcomePage = () => {
               React.createElement("div", {
                 key: "bg1",
                 className:
-                  "absolute inset-0 bg-gradient-to-br from-stat-primary to-stat-primary-800 rounded-2xl shadow-2xl transform rotate-6 transition-transform duration-300 hover:rotate-12 hover:scale-110",
+                  "absolute inset-0 bg-gradient-to-br from-stat-primary to-stat-primary-800 rounded-2xl shadow-2xl transform rotate-6 transition-transform duration-300",
               }),
               React.createElement(
                 "div",
@@ -147,7 +147,7 @@ const WelcomePage = () => {
                 "div",
                 {
                   className:
-                    "absolute -top-8 left-1/2 transform -translate-x-1/2 bg-stat-font-tertiary text-white text-xs px-2 py-1 rounded whitespace-nowrap",
+                    "absolute -top-8 left-1/2 transform -translate-x-1/2 bg-stat-font-tertiary text-white text-xs px-2xs py-2xs rounded whitespace-nowrap",
                 },
                 `${Math.round(height)}%`
               )
@@ -195,7 +195,7 @@ const WelcomePage = () => {
             React.createElement(
               "i",
               {
-                className: `material-icons-outlined text-indigo-300 w-8 h-8 transition-all duration-1000 hover:text-indigo-500 hover:scale-125 hover:rotate-180 cursor-pointer ${
+                className: `material-icons-outlined text-stat-primary-400 w-8 h-8 transition-all duration-1000 ${
                   isVisible
                     ? "opacity-30 top-40 right-12"
                     : "opacity-0 top-0 right-0"
@@ -241,7 +241,7 @@ const WelcomePage = () => {
             React.createElement(
               "i",
               {
-                className: `material-icons-outlined text-indigo-400 w-8 h-8 transition-all duration-1000 hover:text-indigo-600 hover:scale-125 cursor-pointer ${
+                className: `material-icons-outlined text-stat-primary-400 w-8 h-8 transition-all duration-1000 ${
                   isVisible
                     ? "opacity-30 bottom-32 right-8"
                     : "opacity-0 bottom-0 right-0"
@@ -313,12 +313,12 @@ const WelcomePage = () => {
                     React.createElement("stop", {
                       key: "stop1",
                       offset: "0%",
-                      stopColor: "#a855f7",
+                      stopColor: "#00c9a7",
                     }),
                     React.createElement("stop", {
                       key: "stop2",
                       offset: "100%",
-                      stopColor: "#6366f1",
+                      stopColor: "#0a6b4b",
                     }),
                   ]
                 )
@@ -355,19 +355,10 @@ const WelcomePage = () => {
         },
         [
           React.createElement(
-            "h1",
-            {
-              key: "title",
-              className:
-                "text-xl font-noto font-bold mb-2 bg-gradient-to-r from-stat-primary to-stat-primary-800 bg-clip-text text-transparent animate-pulse",
-            },
-            "StatBridge"
-          ),
-          React.createElement(
             "p",
             {
               key: "description",
-              className: "text-base font-noto leading-6 px-4",
+              className: "text-base font-noto leading-6 px-xs",
             },
             [
               "Welcome to the ",
@@ -390,7 +381,7 @@ const WelcomePage = () => {
         "div",
         {
           key: "stats-cards",
-          className: `grid grid-cols-3 gap-3 w-full transition-all duration-1000 delay-500 ${
+          className: `grid grid-cols-3 gap-3xl w-full transition-all duration-1000 delay-500 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`,
         },
@@ -404,7 +395,7 @@ const WelcomePage = () => {
             {
               key: index,
               className:
-                "bg-stat-primary-50 p-3 rounded-xl border-2 border-bg-stat-primary-100 hover:border-purple-400 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105 hover:-translate-y-1",
+                "bg-stat-primary-50 p-3 rounded-xl border-2 border-bg-stat-primary-100",
             },
             [
               React.createElement(
@@ -412,7 +403,7 @@ const WelcomePage = () => {
                 {
                   key: "icon",
                   className:
-                    "material-icons-outlined w-6 h-6 text-stat-primary mx-auto mb-1",
+                    "material-icons-outlined w-6 h-6 text-stat-primary mx-auto mb-2xs",
                   style: { fontSize: "24px" },
                 },
                 stat.icon
@@ -474,7 +465,7 @@ const WelcomePage = () => {
         "div",
         {
           key: "arrow",
-          className: `mt-4 transition-all duration-1000 ease-out delay-700 ${
+          className: `mt-1sm transition-all duration-1000 ease-out delay-700 ${
             isVisible ? "opacity-100" : "opacity-0"
           }`,
           style: { animation: "bounce 2s ease-in-out infinite" },
