@@ -15,7 +15,7 @@ const ProjectsList = ({
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full",
+      className: "flex flex-col gap-[3px] w-full pb-12",
     },
     projects.map((project) =>
       React.createElement(
@@ -131,10 +131,11 @@ const MyLastProjectsSection = ({ newProject }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full h-full min-h-0",
+      className: "flex flex-col gap-[3px] w-full h-full",
       style: {
         display: "flex",
         flexDirection: "column",
+        minHeight: 0,
         overflow: "hidden",
       },
     },
@@ -170,10 +171,11 @@ const MyLastProjectsSection = ({ newProject }) => {
               "div",
               {
                 key: "projects-list-wrapper",
-                className: "flex-1 min-h-0 overflow-y-auto",
                 style: {
+                  flex: "1 1 0",
+                  minHeight: 0,
                   overflowY: "auto",
-                  WebkitOverflowScrolling: "touch",
+                  overflowX: "hidden",
                 },
               },
               [

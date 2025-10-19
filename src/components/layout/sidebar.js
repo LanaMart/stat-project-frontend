@@ -180,11 +180,10 @@ const Sidebar = ({ isOpen, onToggle }) => {
               "div",
               {
                 key: "projects-scroll-container",
-                className: "flex-1 min-h-0",
+                className: "flex-1 min-h-0 overflow-hidden",
                 style: {
                   display: "flex",
                   flexDirection: "column",
-                  overflow: "hidden",
                 },
               },
               [
