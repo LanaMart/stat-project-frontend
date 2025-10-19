@@ -1,5 +1,5 @@
 const React = require("react");
-const { MaterialIcon } = require("./button.js");
+const { QPushButton, MaterialIcon } = require("./button.js");
 
 // Hook to use dialogs
 const useDialog = () => {
@@ -21,8 +21,8 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
     React.createElement(
       "div",
       {
-        className: "bg-white rounded-lg w-[500px] flex flex-col mt-8",
-        style: { border: "1px solid #f1f0fb" },
+        className:
+          "bg-white rounded-lg w-[500px] flex flex-col mt-1sm border border-stat-primary-100",
         onClick: (e) => e.stopPropagation(),
       },
       [
@@ -32,7 +32,7 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
           {
             key: "header",
             className:
-              "flex items-center justify-between px-5 py-3 border-b border-[#f1f0fb]",
+              "flex items-center justify-between p-3lg border-b border-stat-primary-50",
           },
           [
             React.createElement(
@@ -45,15 +45,13 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
                 React.createElement(MaterialIcon, {
                   key: "info",
                   name: "info",
-                  size: 24,
-                  className: "text-[#6a5acd]",
+                  className: "material-icons-outlined text-stat-font-secondary",
                 }),
                 React.createElement(
                   "div",
                   {
                     key: "title",
-                    className: "text-[#2d2a45] text-[16px] font-bold",
-                    style: { fontFamily: "Noto Sans" },
+                    className: "text-stat-font text-lg font-bold font-noto",
                   },
                   "Project delete"
                 ),
@@ -62,8 +60,8 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
             React.createElement(MaterialIcon, {
               key: "close",
               name: "close",
-              size: 24,
-              className: "text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]",
+              className:
+                "material-icons-outlined text-stat-font-secondary cursor-pointer hover:text-stat-font-tertiary",
               onClick: onClose,
             }),
           ]
@@ -74,15 +72,25 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
           "div",
           {
             key: "content",
-            className: "bg-[#f5f6f7] px-6 py-4",
+            className: "bg-stat-bg p-3xl",
           },
           React.createElement(
             "div",
             {
-              className: "text-[#2d2a45] text-[16px] break-words",
-              style: { fontFamily: "Noto Sans" },
+              className: "text-stat-font text-base break-words font-noto",
             },
-            `Are you sure you want to delete "${projectName}" project?`
+            [
+              'Are you sure you want to delete "',
+              React.createElement(
+                "span",
+                {
+                  className: "text-stat-primary font-semibold",
+                  key: "project",
+                },
+                projectName
+              ),
+              '" project?',
+            ]
           )
         ),
 
@@ -91,27 +99,25 @@ const DeleteProjectDialog = ({ projectName, onConfirm, onClose }) => {
           "div",
           {
             key: "buttons",
-            className: "flex justify-end gap-2.5 px-5 py-3",
+            className: "flex justify-end gap-2.5 p-3lg",
           },
           [
+            // Cancel-Button
             React.createElement(
-              "button",
+              QPushButton,
               {
                 key: "cancel",
-                className:
-                  "px-3 py-2.5 text-[#6a5acd] hover:bg-gray-50 rounded",
-                style: { appearance: "none", WebkitAppearance: "none" },
+                variant: "tertiary",
                 onClick: onClose,
               },
               "Cancel"
             ),
+            // Delete-Button
             React.createElement(
-              "button",
+              QPushButton,
               {
                 key: "delete",
-                className:
-                  "bg-[#6a5acd] text-white px-3 py-2.5 rounded flex items-center gap-2",
-                style: { appearance: "none", WebkitAppearance: "none" },
+                variant: "primary",
                 onClick: () => {
                   onConfirm();
                   onClose();
