@@ -38,21 +38,9 @@ const ProjectViewPage = ({ project }) => {
           "div",
           {
             key: "error-message",
-            className: "text-[#2d2a45] text-[18px] text-center",
-            style: { fontFamily: "Noto Sans" },
+            className: "text-stat-font text-base text-center font-noto",
           },
           "Project not found"
-        ),
-        React.createElement(
-          "button",
-          {
-            key: "back-button",
-            onClick: () => navigate("welcome"),
-            className:
-              "px-4 py-2 bg-[#6a5acd] text-white rounded-lg hover:bg-[#5a4abd] transition-colors",
-            style: { fontFamily: "Noto Sans" },
-          },
-          "Back to Welcome"
         ),
       ]
     );
@@ -75,7 +63,7 @@ const ProjectViewPage = ({ project }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-6 min-h-screen",
+      className: "flex flex-col gap-4xl min-h-screen",
     },
     [
       // Header with back button
@@ -83,7 +71,7 @@ const ProjectViewPage = ({ project }) => {
         "div",
         {
           key: "header",
-          className: "flex items-center gap-4",
+          className: "flex items-center gap-3lg",
         },
         [
           React.createElement(
@@ -97,8 +85,7 @@ const ProjectViewPage = ({ project }) => {
                 "h3",
                 {
                   key: "project-title",
-                  className: "text-[#2d2a45] text-[18px] font-semibold",
-                  style: { fontFamily: "Noto Sans" },
+                  className: "text-stat-font text-lg font-semibold font-noto",
                 },
                 currentProject.name
               ),
@@ -106,8 +93,7 @@ const ProjectViewPage = ({ project }) => {
                 "p",
                 {
                   key: "project-date",
-                  className: "text-[#5e5c7f] text-[14px]",
-                  style: { fontFamily: "Noto Sans" },
+                  className: "text-stat-font-secondary text-sm font-noto",
                 },
                 `Created: ${formatDate(currentProject.createdAt)}`
               ),
@@ -120,24 +106,24 @@ const ProjectViewPage = ({ project }) => {
         "div",
         {
           key: "drag-drop-container",
-          className: "flex items-center justify-center flex-col gap-4",
+          className: "flex items-center justify-center flex-col gap-3lg",
         },
         React.createElement(DragDropZone, {
           key: "drag-drop",
           uploadManager: uploadManager,
           onFileSelect: uploadManager.startUpload,
         }),
-           // Upload Progress
-      uploadManager.uploadState !== uploadManager.UPLOAD_STATES.IDLE &&
-        React.createElement(UploadProgress, {
-          key: "upload-progress",
-          fileName: uploadManager.currentFile?.name,
-          fileSize: uploadManager.currentFile?.size,
-          uploadState: uploadManager.uploadState,
-          progress: uploadManager.progress,
-          onCancel: uploadManager.cancelUpload,
-          processingTimeEstimate: uploadManager.processingTimeEstimate,
-        }),
+        // Upload Progress
+        uploadManager.uploadState !== uploadManager.UPLOAD_STATES.IDLE &&
+          React.createElement(UploadProgress, {
+            key: "upload-progress",
+            fileName: uploadManager.currentFile?.name,
+            fileSize: uploadManager.currentFile?.size,
+            uploadState: uploadManager.uploadState,
+            progress: uploadManager.progress,
+            onCancel: uploadManager.cancelUpload,
+            processingTimeEstimate: uploadManager.processingTimeEstimate,
+          })
       ),
 
       // Processing Message

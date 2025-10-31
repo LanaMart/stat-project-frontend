@@ -15,17 +15,18 @@ const ProjectsList = ({
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full pb-12",
+      className: "flex flex-col gap-2xs w-full pb-12",
     },
     projects.map((project) =>
       React.createElement(
         "div",
         {
           key: project.id,
-          className: `flex items-center justify-between p-2.5 rounded-lg cursor-pointer ${
+          className: `flex items-center justify-between p-2.5 rounded-sm cursor-pointer ${
+            // don't change this p-variable, it makes the bottom projects visible!!
             selectedProject && selectedProject.id === project.id
-              ? "bg-violet-50"
-              : "hover:bg-gray-50"
+              ? "bg-stat-primary-50"
+              : "hover:bg-stat-bg"
           }`,
         },
         [
@@ -33,7 +34,7 @@ const ProjectsList = ({
             "div",
             {
               key: "content",
-              className: "flex items-center gap-2 flex-1",
+              className: "flex items-center gap-2xs flex-1",
               onClick: () => onProjectSelect(project),
             },
             [
@@ -42,19 +43,18 @@ const ProjectsList = ({
                 name: "folder",
                 className:
                   selectedProject && selectedProject.id === project.id
-                    ? "text-[#2d2a45] material-icons-outlined "
-                    : "text-[#5e5c7f] material-icons-outlined ",
+                    ? "text-stat-primary-600 material-icons-outlined "
+                    : "text-stat-primary-400 material-icons-outlined ",
               }),
               React.createElement(
                 "span",
                 {
                   key: "name",
-                  className: `text-[13px] ${
+                  className: `text-sm font-noto ${
                     selectedProject && selectedProject.id === project.id
-                      ? "text-[#2d2a45]"
-                      : "text-[#5e5c7f]"
+                      ? "text-stat-font"
+                      : "text-stat-font-secondary"
                   }`,
-                  style: { fontFamily: "Noto Sans", lineHeight: "20px" },
                 },
                 project.name
               ),
@@ -64,7 +64,7 @@ const ProjectsList = ({
             key: "delete",
             name: "delete",
             className:
-              "material-icons-outlined text-stat-primary hover:text-red-500 cursor-pointer",
+              "material-icons-outlined text-stat-font-secondary hover:text-red-500 cursor-pointer",
             onClick: (e) => {
               e.stopPropagation();
               showDialog({
@@ -131,7 +131,7 @@ const MyLastProjectsSection = ({ newProject }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-col gap-[3px] w-full h-full",
+      className: "flex flex-col gap-2xs w-full h-full",
       style: {
         display: "flex",
         flexDirection: "column",
@@ -153,15 +153,14 @@ const MyLastProjectsSection = ({ newProject }) => {
             "div",
             {
               key: "label",
-              className: "text-[#8a7bea] text-[11px] font-normal",
-              style: { fontFamily: "Noto Sans", lineHeight: "19.5px" },
+              className: "text-stat-primary-400 text-xs font-noto",
             },
             "MY PROJECTS"
           ),
           React.createElement(MaterialIcon, {
             key: "arrow",
             name: isExpanded ? "keyboard_arrow_down" : "keyboard_arrow_right",
-            className: "text-[#8a7bea]",
+            className: "text-stat-primary-400",
           }),
         ]
       ),
@@ -206,7 +205,7 @@ const ReportCard = ({
     "div",
     {
       className:
-        "bg-white border border-[#f1f0fb] rounded-lg p-4 w-full max-w-[552px] flex flex-col gap-3",
+        "bg-stat-white border border-stat-primary-50 rounded-lg p-4 w-full max-w-[552px] flex flex-col gap-xs",
     },
     [
       React.createElement(
@@ -214,7 +213,7 @@ const ReportCard = ({
         {
           key: "project-tag",
           className:
-            "bg-[#f1f0fb] px-2.5 py-1 rounded text-[#5e5c7f] text-[11px] self-start",
+            "bg-stat-primary-50 px-2sm py-xs rounded text-stat-font-secondary text-xs self-start",
           style: { fontFamily: "Noto Sans", lineHeight: "19.5px" },
         },
         projectName
@@ -230,7 +229,7 @@ const ReportCard = ({
             "div",
             {
               key: "report-info",
-              className: "flex items-center gap-2 cursor-pointer",
+              className: "flex items-center gap-1sm cursor-pointer",
               onClick: onReportClick,
             },
             [
