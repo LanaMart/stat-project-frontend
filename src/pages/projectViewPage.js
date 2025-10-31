@@ -2,47 +2,64 @@ const React = require("react");
 const { MaterialIcon } = require("../components/button.js");
 const { useRouter } = require("../router/router.js");
 const {
-  useUploadManager,
+  useProject,
+  PROJECT_STATES,
+  UPLOAD_STATES,
+} = require("../context/projectContext.js");
+const {
   DragDropZone,
   UploadProgress,
   ProcessingMessage,
 } = require("../components/upload.js");
 
-// Project View Page Component
+// Placeholder for the table (in INTERPRETATION state)
+const DataTablePlaceholder = ({ projectName }) => {
+  return React.createElement(
+    "div",
+    {
+      className:
+        "bg-white border border-stat-primary-50 rounded-md p-3lg w-[600px] flex flex-col items-center gap-3md",
+    },
+    [
+      React.createElement(MaterialIcon, {
+        key: "table-icon",
+        name: "table_chart",
+        className: "material-icons-outlined text-stat-primary text-4xl",
+      }),
+      React.createElement(
+        "h4",
+        {
+          className:
+            "text-stat-font text-lg font-semibold text-center font-noto",
+        },
+        `Here will be the table of the project "${projectName}"`
+      ),
+      React.createElement(
+        "p",
+        {
+          className: "text-stat-font-secondary text-sm text-center font-noto",
+        },
+        "Data visualization coming soon…"
+      ),
+    ]
+  );
+};
+
+// Main component of the project page
 const ProjectViewPage = ({ project }) => {
   const { navigate } = useRouter();
-  const uploadManager = useUploadManager();
+  const { state, cancelUpload } = useProject();
 
-  // Get the project from parameters or from localStorage
-  const currentProject = React.useMemo(() => {
-    if (project) return project;
-
-    try {
-      const savedProject = localStorage.getItem("currentProject");
-      return savedProject ? JSON.parse(savedProject) : null;
-    } catch (error) {
-      console.error("Error loading project from localStorage:", error);
-      return null;
-    }
-  }, [project]);
-
-  // If the project is not found, show an error message
-  if (!currentProject) {
+  // Checking the project from routeParams (without global LS)
+  if (!project || !project.id) {
     return React.createElement(
       "div",
-      {
-        className: "flex flex-col items-center justify-center gap-4 h-full",
-      },
-      [
-        React.createElement(
-          "div",
-          {
-            key: "error-message",
-            className: "text-stat-font text-base text-center font-noto",
-          },
-          "Project not found"
-        ),
-      ]
+      { className: "flex flex-col items-center justify-center gap-4 h-full" },
+      React.createElement(
+        "div",
+        { className: "text-stat-font text-base text-center font-noto" },
+        "Project not found"
+      )
     );
   }
 
@@ -60,26 +77,54 @@ const ProjectViewPage = ({ project }) => {
     }
   };
 
+  // The DragDropZone is only shown in UPLOAD or RESULT mode.
+  const showDragDropZone =
+    state.projectState === PROJECT_STATES.UPLOAD ||
+    state.projectState === PROJECT_STATES.RESULT;
+
+  // Additional content
+  let additionalContent = null;
+
+  if (state.projectState === PROJECT_STATES.UPLOAD) {
+    const showUploadProgress =
+      state.uploadSubState === UPLOAD_STATES.UPLOADING ||
+      state.uploadSubState === UPLOAD_STATES.SUCCESS;
+
+    const showProcessing = state.uploadSubState === UPLOAD_STATES.PROCESSING;
+
+    if (showUploadProgress) {
+      additionalContent = React.createElement(UploadProgress, {
+        key: "upload-progress",
+        fileName: state.currentFile?.name,
+        fileSize: state.currentFile?.size,
+        uploadState: state.uploadSubState,
+        progress: state.progress,
+        onCancel: cancelUpload,
+        processingTimeEstimate: state.processingTimeEstimate,
+      });
+    } else if (showProcessing) {
+      additionalContent = React.createElement(ProcessingMessage, {
+        key: "processing-message",
+      });
+    }
+  } else if (state.projectState === PROJECT_STATES.INTERPRETATION) {
+    additionalContent = React.createElement(DataTablePlaceholder, {
+      key: "data-placeholder",
+      projectName: project.name,
+    });
+  }
+
   return React.createElement(
     "div",
-    {
-      className: "flex flex-col gap-4xl min-h-screen",
-    },
+    { className: "flex flex-col gap-4xl min-h-screen" },
     [
-      // Header with back button
       React.createElement(
         "div",
-        {
-          key: "header",
-          className: "flex items-center gap-3lg",
-        },
+        { key: "header", className: "flex items-center gap-3lg" },
         [
           React.createElement(
             "div",
-            {
-              key: "project-info",
-              className: "flex-1",
-            },
+            { key: "project-info", className: "flex-1" },
             [
               React.createElement(
                 "h3",
@@ -87,7 +132,7 @@ const ProjectViewPage = ({ project }) => {
                   key: "project-title",
                   className: "text-stat-font text-lg font-semibold font-noto",
                 },
-                currentProject.name
+                project.name
               ),
               React.createElement(
                 "p",
@@ -95,42 +140,28 @@ const ProjectViewPage = ({ project }) => {
                   key: "project-date",
                   className: "text-stat-font-secondary text-sm font-noto",
                 },
-                `Created: ${formatDate(currentProject.createdAt)}`
+                `Created: ${formatDate(project.createdAt)}`
               ),
             ]
           ),
         ]
       ),
-      // Centered Drag and Drop Zone
       React.createElement(
         "div",
         {
-          key: "drag-drop-container",
+          key: "content",
           className: "flex items-center justify-center flex-col gap-3lg",
         },
-        React.createElement(DragDropZone, {
-          key: "drag-drop",
-          uploadManager: uploadManager,
-          onFileSelect: uploadManager.startUpload,
-        }),
-        // Upload Progress
-        uploadManager.uploadState !== uploadManager.UPLOAD_STATES.IDLE &&
-          React.createElement(UploadProgress, {
-            key: "upload-progress",
-            fileName: uploadManager.currentFile?.name,
-            fileSize: uploadManager.currentFile?.size,
-            uploadState: uploadManager.uploadState,
-            progress: uploadManager.progress,
-            onCancel: uploadManager.cancelUpload,
-            processingTimeEstimate: uploadManager.processingTimeEstimate,
-          })
+        [
+          // DragDropZone only в UPLOAD/RESULT
+          showDragDropZone &&
+            React.createElement(DragDropZone, {
+              key: "drag-drop",
+              disabled: false,
+            }),
+          additionalContent,
+        ].filter(Boolean)
       ),
-
-      // Processing Message
-      uploadManager.uploadState === uploadManager.UPLOAD_STATES.PROCESSING &&
-        React.createElement(ProcessingMessage, {
-          key: "processing-message",
-        }),
     ].filter(Boolean)
   );
 };

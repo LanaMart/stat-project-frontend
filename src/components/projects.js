@@ -85,9 +85,9 @@ const MyLastProjectsSection = ({ newProject }) => {
   const [selectedProject, setSelectedProject] = React.useState(null);
   const [projects, setProjects] = React.useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("projects") || "[]");
+      return JSON.parse(localStorage.getItem("projects_list") || "[]"); // Изменено: список проектов в отдельном ключе
     } catch (error) {
-      console.error("Error loading projects from localStorage:", error);
+      console.error("Error loading projects list from localStorage:", error);
       return [];
     }
   });
@@ -96,16 +96,31 @@ const MyLastProjectsSection = ({ newProject }) => {
   // Handle new project and auto-expand
   React.useEffect(() => {
     if (newProject) {
+      const newId = newProject.id; // make sure the id is generated (e.g., Date.now() in the calling code)
       setProjects((prevProjects) => {
         const updatedProjects = [
           newProject,
-          ...prevProjects.filter((p) => p.id !== newProject.id),
+          ...prevProjects.filter((p) => p.id !== newId),
         ];
-        localStorage.setItem("projects", JSON.stringify(updatedProjects));
+        localStorage.setItem("projects_list", JSON.stringify(updatedProjects));
         return updatedProjects;
       });
+
+      // For a new project: We save the initialState in Local Storage by ID (isolated)
+      const initialStateForNew = {
+        projectState: "upload",
+        uploadSubState: "idle",
+        currentFile: null,
+        progress: 0,
+        processingTimeEstimate: null,
+        projectMeta: { name: newProject.name, createdAt: newProject.createdAt },
+      };
+      localStorage.setItem(
+        `project_data_${newId}`,
+        JSON.stringify(initialStateForNew)
+      ); // Пустое состояние
+
       setSelectedProject(newProject);
-      localStorage.setItem("currentProject", JSON.stringify(newProject));
       setIsExpanded(true);
       navigate("project-view", { project: newProject });
     }
@@ -113,17 +128,20 @@ const MyLastProjectsSection = ({ newProject }) => {
 
   const handleProjectSelect = (project) => {
     setSelectedProject(project);
-    localStorage.setItem("currentProject", JSON.stringify(project));
     navigate("project-view", { project });
   };
 
   const handleProjectDelete = (projectToDelete) => {
-    const updatedProjects = projects.filter((p) => p.id !== projectToDelete.id);
+    const deletedId = projectToDelete.id;
+    const updatedProjects = projects.filter((p) => p.id !== deletedId);
     setProjects(updatedProjects);
-    localStorage.setItem("projects", JSON.stringify(updatedProjects));
-    if (selectedProject && selectedProject.id === projectToDelete.id) {
+    localStorage.setItem("projects_list", JSON.stringify(updatedProjects));
+
+    // Удаляем изолированное состояние проекта
+    localStorage.removeItem(`project_data_${deletedId}`);
+
+    if (selectedProject && selectedProject.id === deletedId) {
       setSelectedProject(null);
-      localStorage.removeItem("currentProject");
       navigate("welcome");
     }
   };
@@ -236,7 +254,6 @@ const ReportCard = ({
               React.createElement(MaterialIcon, {
                 key: "chart-icon",
                 name: "insert_chart_outlined",
-                size: 24,
                 className: "text-[#6a5acd]",
               }),
               React.createElement(
@@ -260,14 +277,12 @@ const ReportCard = ({
               React.createElement(MaterialIcon, {
                 key: "download",
                 name: "download",
-                size: 24,
                 className: "text-[#5e5c7f] cursor-pointer hover:text-[#2d2a45]",
                 onClick: onDownload,
               }),
               React.createElement(MaterialIcon, {
                 key: "delete",
                 name: "delete",
-                size: 24,
                 className:
                   " material-icons-outlined text-[#5e5c7f] cursor-pointer hover:text-red-500",
                 onClick: onDelete,
