@@ -2,6 +2,7 @@ const React = require("react");
 const ReactDOM = require("react-dom/client");
 const { DialogProvider } = require("./components/dialog.js");
 const { RouterProvider } = require("./router/router.js");
+const { ProjectProvider } = require("./context/projectContext.js");
 const { Header } = require("./components/layout/header.js");
 const { Footer } = require("./components/layout/footer.js");
 const { MainContainer } = require("./components/layout/mainContainer.js");
@@ -24,10 +25,7 @@ const App = () => {
         {
           key: "main-container",
           isOpen: sidebarOpen,
-          onToggle: () => {
-            console.log("Toggling sidebar, current state:", sidebarOpen);
-            setSidebarOpen(!sidebarOpen);
-          },
+          onToggle: () => setSidebarOpen(!sidebarOpen),
         },
         [React.createElement(AppRouter, { key: "router" })]
       ),
@@ -42,7 +40,15 @@ try {
     React.createElement(
       DialogProvider,
       null,
-      React.createElement(RouterProvider, null, React.createElement(App))
+      React.createElement(
+        RouterProvider,
+        null,
+        React.createElement(
+          ProjectProvider,
+          { projectId: "default_project" }, // ← Временный ID
+          React.createElement(App)
+        )
+      )
     )
   );
   console.log("App rendered successfully");
