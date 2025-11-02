@@ -176,7 +176,7 @@ const YourDataDashboard = ({
                         {
                           "key": "view-btn",
                           "className":
-                            "border border-stat-primary-50 p-xs rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex border border-stat-primary-50 p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onViewFile,
                           "type": "button",
                           "aria-label": "View file",
@@ -184,7 +184,7 @@ const YourDataDashboard = ({
                         React.createElement(MaterialIcon, {
                           name: "remove_red_eye",
                           className:
-                            "material-icons-outlined text-stat-font-secondary text-xl",
+                            "material-icons-outlined text-stat-font-secondary text-2xl",
                         })
                       ),
 
@@ -194,7 +194,7 @@ const YourDataDashboard = ({
                         {
                           "key": "download-btn",
                           "className":
-                            "border border-stat-primary-50 p-xs rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onDownloadFile,
                           "type": "button",
                           "aria-label": "Download file",
@@ -202,7 +202,7 @@ const YourDataDashboard = ({
                         React.createElement(MaterialIcon, {
                           name: "download",
                           className:
-                            "material-icons-outlined text-stat-font-secondary text-xl",
+                            "material-icons-outlined text-stat-font-secondary text-2xl",
                         })
                       ),
 
@@ -212,7 +212,7 @@ const YourDataDashboard = ({
                         {
                           "key": "delete-btn",
                           "className":
-                            "border border-stat-primary-50 p-xs rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onDeleteFile,
                           "type": "button",
                           "aria-label": "Delete file",
@@ -220,7 +220,7 @@ const YourDataDashboard = ({
                         React.createElement(MaterialIcon, {
                           name: "delete",
                           className:
-                            "material-icons-outlined text-stat-font-secondary text-xl",
+                            "material-icons-outlined text-stat-font-secondary text-2xl",
                         })
                       ),
                     ]

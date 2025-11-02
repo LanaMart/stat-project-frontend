@@ -4,6 +4,7 @@ const {
   useProject,
   PROJECT_STATES,
   UPLOAD_STATES,
+  ProjectProvider, // Импортируем ProjectProvider для обертки
 } = require("../context/projectContext.js");
 const { DragDropZone, UploadProgress } = require("../components/upload.js");
 const { ProjectHeader } = require("../components/projectHeader.js");
@@ -30,7 +31,8 @@ const { YourDataDashboard } = require("../components/yourDataDashboard.js");
  */
 const ProjectViewPage = ({ project }) => {
   const { navigate } = useRouter();
-  const { state, cancelUpload } = useProject();
+  // 🔄 API INTEGRATION POINT: В будущем здесь можно добавить проверку проекта через API
+  // const { data: projectData } = useQuery(['project', project.id], () => fetch(`/api/projects/${project.id}`));
 
   // ============================================================================
   // VALIDATION
@@ -54,132 +56,144 @@ const ProjectViewPage = ({ project }) => {
   }
 
   // ============================================================================
-  // STATE CHECKS
-  // ============================================================================
-
-  // We are checking if the file has been uploaded.
-  // 🔄 API INTEGRATION POINT: In the future, this will be verified via API.
-  // GET /api/projects/{projectId}/files → { hasFiles: boolean, files: [...] }
-  const hasUploadedFile =
-    state.projectState === PROJECT_STATES.INTERPRETATION ||
-    state.projectState === PROJECT_STATES.VALIDATION ||
-    state.projectState === PROJECT_STATES.WIZARD ||
-    state.projectState === PROJECT_STATES.VISUALIZATION;
-
-  // We display the DragDropZone throughout the entire upload process (UPLOAD state).
-  const showDragDropZone = state.projectState === PROJECT_STATES.UPLOAD;
-
-  // Loading progress displayed over the DragDropZone (UPLOADING + SUCCESS)
-  const showUploadProgress =
-    state.projectState === PROJECT_STATES.UPLOAD &&
-    (state.uploadSubState === UPLOAD_STATES.UPLOADING ||
-      state.uploadSubState === UPLOAD_STATES.SUCCESS);
-
-  // ============================================================================
-  // MAIN CONTENT RENDERING
-  // ============================================================================
-
-  let mainContent = null;
-
-  if (showDragDropZone) {
-    // We display the DragDropZone with UploadProgress on top (if a file is being uploaded).
-    mainContent = React.createElement(
-      "div",
-      {
-        key: "drag-drop-container",
-        className:
-          "contentContainer flex flex-col items-center flex-1 self-stretch relative",
-      },
-      [
-        // The DragDropZone is always displayed during the UPLOAD process.
-        React.createElement(DragDropZone, {
-          key: "drag-drop",
-          disabled: state.uploadSubState !== UPLOAD_STATES.IDLE,
-        }),
-
-        // UploadProgress is displayed on top of DragDropZone (if a file is being uploaded).
-        showUploadProgress &&
-          React.createElement(
-            "div",
-            {
-              key: "progress-overlay",
-              className: "absolute inset-0 flex items-center justify-center",
-            },
-            React.createElement(UploadProgress, {
-              fileName: state.currentFile?.name,
-              fileSize: state.currentFile?.size,
-              uploadState: state.uploadSubState,
-              progress: state.progress,
-              onCancel: cancelUpload,
-              processingTimeEstimate: state.processingTimeEstimate,
-            })
-          ),
-      ].filter(Boolean)
-    );
-  } else if (hasUploadedFile) {
-    // Show the data dashboard
-    mainContent = React.createElement(YourDataDashboard, {
-      key: "data-dashboard",
-      projectName: project.name,
-      fileName: state.currentFile?.name || "data.csv",
-
-      // 🔄 API INTEGRATION POINT: CTA's
-      onAddFile: () => {
-        console.log("Add another file");
-        // TODO: Implement add file logic
-        // navigate(`/projects/${project.id}/add-file`);
-      },
-
-      onViewFile: () => {
-        console.log("View file:", state.currentFile?.name);
-        // TODO: Implement view file logic
-        // GET /api/projects/{projectId}/files/{fileId}/preview
-      },
-
-      onDownloadFile: () => {
-        console.log("Download file:", state.currentFile?.name);
-        // TODO: Implement download file logic
-        // GET /api/projects/{projectId}/files/{fileId}/download
-      },
-
-      onDeleteFile: () => {
-        console.log("Delete file:", state.currentFile?.name);
-        // TODO: Implement delete file logic with confirmation
-        // DELETE /api/projects/{projectId}/files/{fileId}
-      },
-
-      onStartAnalyze: () => {
-        console.log("Start data analyze");
-        // TODO: Implement analyze logic
-        // POST /api/projects/{projectId}/analyze
-        // navigate(`/projects/${project.id}/analyze`);
-      },
-    });
-  }
-
-  // ============================================================================
-  // PAGE RENDER
+  // RENDER WITH PROVIDER (keyed for remount on project change)
   // ============================================================================
 
   return React.createElement(
-    "div",
+    ProjectProvider,
     {
-      "className":
-        "projectContent flex flex-col min-h-screen gap-4xl bg-stat-bg",
-      "data-page": "ProjectView",
-      "data-project-id": project.id,
-      "data-state": state.projectState,
+      key: project.id, // Ключ для remount и сброса state при смене проекта
+      projectId: project.id,
+      initialMeta: { name: project.name, createdAt: project.createdAt },
     },
-    [
-      // Header Component
-      React.createElement(ProjectHeader, {
-        key: "header",
-        project: project,
-      }),
+    React.createElement(
+      "div",
+      {
+        "className":
+          "projectContent flex flex-col min-h-screen gap-4xl bg-stat-bg",
+        "data-page": "ProjectView",
+        "data-project-id": project.id,
+      },
+      [
+        // Header Component
+        React.createElement(ProjectHeader, {
+          key: "header",
+          project: project,
+        }),
 
-      // Main Content Area
-      mainContent,
-    ]
+        // Main Content Area (wrapped inside Provider)
+        (() => {
+          const { state, cancelUpload } = useProject(); // Теперь внутри Provider
+
+          // ============================================================================
+          // STATE CHECKS
+          // ============================================================================
+
+          // We are checking if the file has been uploaded.
+          // 🔄 API INTEGRATION POINT: In the future, this will be verified via API.
+          // GET /api/projects/{projectId}/files → { hasFiles: boolean, files: [...] }
+          const hasUploadedFile =
+            state.projectState === PROJECT_STATES.INTERPRETATION ||
+            state.projectState === PROJECT_STATES.VALIDATION ||
+            state.projectState === PROJECT_STATES.WIZARD ||
+            state.projectState === PROJECT_STATES.VISUALIZATION;
+
+          // We display the DragDropZone throughout the entire upload process (UPLOAD state).
+          const showDragDropZone = state.projectState === PROJECT_STATES.UPLOAD;
+
+          // Loading progress displayed over the DragDropZone (UPLOADING + SUCCESS)
+          const showUploadProgress =
+            state.projectState === PROJECT_STATES.UPLOAD &&
+            (state.uploadSubState === UPLOAD_STATES.UPLOADING ||
+              state.uploadSubState === UPLOAD_STATES.SUCCESS);
+
+          // ============================================================================
+          // MAIN CONTENT RENDERING
+          // ============================================================================
+
+          let mainContent = null;
+
+          if (showDragDropZone) {
+            // We display the DragDropZone with UploadProgress on top (if a file is being uploaded).
+            mainContent = React.createElement(
+              "div",
+              {
+                key: "drag-drop-container",
+                className:
+                  "contentContainer flex flex-col items-center flex-1 self-stretch relative",
+              },
+              [
+                // The DragDropZone is always displayed during the UPLOAD process.
+                React.createElement(DragDropZone, {
+                  key: "drag-drop",
+                  disabled: state.uploadSubState !== UPLOAD_STATES.IDLE,
+                }),
+
+                // UploadProgress is displayed on top of DragDropZone (if a file is being uploaded).
+                showUploadProgress &&
+                  React.createElement(
+                    "div",
+                    {
+                      key: "progress-overlay",
+                      className:
+                        "absolute inset-0 flex items-center justify-center",
+                    },
+                    React.createElement(UploadProgress, {
+                      fileName: state.currentFile?.name,
+                      fileSize: state.currentFile?.size,
+                      uploadState: state.uploadSubState,
+                      progress: state.progress,
+                      onCancel: cancelUpload,
+                      processingTimeEstimate: state.processingTimeEstimate,
+                    })
+                  ),
+              ].filter(Boolean)
+            );
+          } else if (hasUploadedFile) {
+            // Show the data dashboard
+            mainContent = React.createElement(YourDataDashboard, {
+              key: "data-dashboard",
+              projectName: project.name,
+              fileName: state.currentFile?.name || "data.csv",
+
+              // 🔄 API INTEGRATION POINT: CTA's
+              onAddFile: () => {
+                console.log("Add another file");
+                // TODO: Implement add file logic
+                // navigate(`/projects/${project.id}/add-file`);
+              },
+
+              onViewFile: () => {
+                console.log("View file:", state.currentFile?.name);
+                // TODO: Implement view file logic
+                // GET /api/projects/{projectId}/files/{fileId}/preview
+              },
+
+              onDownloadFile: () => {
+                console.log("Download file:", state.currentFile?.name);
+                // TODO: Implement download file logic
+                // GET /api/projects/{projectId}/files/{fileId}/download
+              },
+
+              onDeleteFile: () => {
+                console.log("Delete file:", state.currentFile?.name);
+                // TODO: Implement delete file logic with confirmation
+                // DELETE /api/projects/{projectId}/files/{fileId}
+              },
+
+              onStartAnalyze: () => {
+                console.log("Start data analyze");
+                // TODO: Implement analyze logic
+                // POST /api/projects/{projectId}/analyze
+                // navigate(`/projects/${project.id}/analyze`);
+              },
+            });
+          }
+
+          return mainContent;
+        })(),
+      ]
+    )
   );
 };
 

@@ -162,18 +162,31 @@ const ProjectProvider = ({
   // Флаг для отслеживания первой загрузки
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
+  // Ref для отслеживания текущего projectId (anti-race condition)
+  const currentProjectIdRef = React.useRef(projectId);
+
+  React.useEffect(() => {
+    currentProjectIdRef.current = projectId; // Обновляем ref при смене projectId
+  }, [projectId]);
+
   // ============================================================================
   // LOAD STATE FROM STORAGE (on mount)
   // ============================================================================
   React.useEffect(() => {
+    setIsInitialLoad(true); // Сброс флага на true при каждой смене projectId, чтобы предотвратить преждевременный save
     const loadProjectState = async () => {
+      const loadId = projectId; // Захватываем текущий ID для проверки после async
       try {
         // 🔄 API INTEGRATION POINT: Замените на GET /api/projects/{projectId}/state
-        // const response = await fetch(`/api/projects/${projectId}/state`);
+        // const response = await fetch(`/api/projects/${projectId}/state`, { signal: abortController.signal });
         // const savedState = await response.json();
+        // if (!response.ok) throw new Error('API error');
 
         // Загружаем состояние из localStorage
-        const json = localStorage.getItem(`project_data_${projectId}`);
+        const json = localStorage.getItem(`project_data_${loadId}`);
+
+        // После async: проверка на актуальность projectId
+        if (currentProjectIdRef.current !== loadId) return; // Игнорируем, если проект изменился
 
         if (json) {
           const savedState = JSON.parse(json);
@@ -217,7 +230,7 @@ const ProjectProvider = ({
         }
 
         // 🔄 API INTEGRATION POINT: Загрузка метаданных файла
-        // const fileMetadata = await fetch(`/api/projects/${projectId}/file`);
+        // const fileMetadata = await fetch(`/api/projects/${projectId}/file`, { signal: abortController.signal });
         // if (fileMetadata.exists) { ... }
 
         // Загружаем файл из IndexedDB (если есть)
@@ -229,7 +242,8 @@ const ProjectProvider = ({
           },
         });
 
-        const file = await db.get("files", `file_${projectId}`);
+        const file = await db.get("files", `file_${loadId}`);
+        if (currentProjectIdRef.current !== loadId) return; // Проверка после async
         if (file) {
           dispatch({
             type: "SET_STATE",
@@ -239,17 +253,26 @@ const ProjectProvider = ({
       } catch (err) {
         console.error("❌ Error loading project state:", err);
         // В случае ошибки - начальное состояние
-        dispatch({
-          type: "SET_STATE",
-          payload: {
-            projectState: PROJECT_STATES.UPLOAD,
-            uploadSubState: UPLOAD_STATES.IDLE,
-          },
-        });
+        if (currentProjectIdRef.current === loadId) {
+          dispatch({
+            type: "SET_STATE",
+            payload: {
+              projectState: PROJECT_STATES.UPLOAD,
+              uploadSubState: UPLOAD_STATES.IDLE,
+            },
+          });
+        }
       } finally {
-        setIsInitialLoad(false);
+        if (currentProjectIdRef.current === loadId) {
+          setIsInitialLoad(false);
+        }
       }
     };
+
+    // 🔄 API INTEGRATION POINT: Для отмены запросов при unmount или смене проекта
+    // const abortController = new AbortController();
+    // loadProjectState();
+    // return () => abortController.abort();
 
     loadProjectState();
   }, [projectId]);
@@ -261,17 +284,19 @@ const ProjectProvider = ({
     // Не сохраняем при первой загрузке (пока грузим данные)
     if (isInitialLoad) return;
 
-    const timer = setTimeout(async () => {
+    const saveProjectState = async () => {
+      const saveId = projectId; // Захватываем ID
       try {
         // 🔄 API INTEGRATION POINT: Замените на POST /api/projects/{projectId}/state
         // await fetch(`/api/projects/${projectId}/state`, {
         //   method: 'POST',
-        //   body: JSON.stringify(state)
+        //   body: JSON.stringify(state),
+        //   signal: abortController.signal
         // });
 
         // Сохраняем состояние в localStorage
         localStorage.setItem(
-          `project_data_${projectId}`,
+          `project_data_${saveId}`,
           JSON.stringify({
             projectState: state.projectState,
             uploadSubState: state.uploadSubState,
@@ -290,21 +315,26 @@ const ProjectProvider = ({
         //   formData.append('file', state.currentFile);
         //   await fetch(`/api/projects/${projectId}/file`, {
         //     method: 'POST',
-        //     body: formData
+        //     body: formData,
+        //     signal: abortController.signal
         //   });
         // }
 
         // Сохраняем файл в IndexedDB
         if (state.currentFile) {
           const db = await openDB("ProjectDB", 1);
-          await db.put("files", state.currentFile, `file_${projectId}`);
+          await db.put("files", state.currentFile, `file_${saveId}`);
         }
       } catch (err) {
         console.error("❌ Error saving project state:", err);
       }
-    }, 500); // debounce 500ms
+    };
 
-    return () => clearTimeout(timer);
+    saveProjectState(); // Немедленное сохранение (можно добавить debounce на state, если нужно)
+
+    // 🔄 API INTEGRATION POINT: Для отмены в будущем
+    // const abortController = new AbortController();
+    // return () => abortController.abort();
   }, [state, projectId, isInitialLoad]);
 
   // ============================================================================

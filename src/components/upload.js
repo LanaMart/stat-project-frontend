@@ -1,6 +1,7 @@
 const React = require("react");
 const { QPushButton, MaterialIcon } = require("./button.js");
 const { useProject } = require("../context/projectContext.js");
+const Alert = require("./alert.js"); // Import Alert.js
 
 const UPLOAD_STATES = {
   IDLE: "idle",
@@ -133,7 +134,34 @@ const DragDropZone = ({ disabled }) => {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [isFileDropping, setIsFileDropping] = React.useState(false);
   const [droppedFileInfo, setDroppedFileInfo] = React.useState(null);
+  const [validationErrors, setValidationErrors] = React.useState([]); // State for validation errors (array of strings)
   const fileInputRef = React.useRef(null);
+
+  // Function to simulate file validation
+  const simulateFileValidation = (file) => {
+    const errors = [];
+
+    // Check file type
+    const allowedTypes = [
+      "text/csv",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      errors.push("Invalid file type. Only CSV, PDF, or XLSX allowed.");
+    }
+
+    // Check size (example: max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      errors.push("File too large. Maximum size is 10MB.");
+    }
+
+    // Random error to simulate backend errors (10% chance)
+    if (Math.random() < 0.1) {
+      errors.push("Simulated server error. Please try again.");
+    }
+
+    return errors;
+  };
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -171,18 +199,20 @@ const DragDropZone = ({ disabled }) => {
     const files = Array.from(e.dataTransfer.files);
     console.log("Dropped files:", files.length, files[0]?.name, files[0]?.type);
 
-    const validFiles = files.filter(
-      (file) =>
-        file.type === "text/csv" ||
-        file.type ===
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-        file.type === "application/pdf"
-    );
+    if (files.length > 0) {
+      const file = files[0];
 
-    console.log("Valid files:", validFiles.length);
+      // TODO: Replace this simulated validation with backend API call
+      // Example: POST /api/validate-file with FormData including file
+      // If API returns errors, setValidationErrors(response.errors)
+      // Else, proceed with startUpload
+      const errors = simulateFileValidation(file);
 
-    if (validFiles.length > 0) {
-      const file = validFiles[0];
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        return; // Do not proceed with upload if errors
+      }
+
       console.log("Starting upload for valid file:", file.name);
       setDroppedFileInfo({ name: file.name, size: file.size });
       setIsFileDropping(true);
@@ -194,7 +224,7 @@ const DragDropZone = ({ disabled }) => {
         startUpload(file);
       }, 800);
     } else {
-      console.warn("No valid files dropped");
+      console.warn("No files dropped");
     }
   };
 
@@ -213,6 +243,17 @@ const DragDropZone = ({ disabled }) => {
       disabled
     );
     if (file && !disabled) {
+      // TODO: Replace this simulated validation with backend API call
+      // Example: POST /api/validate-file with FormData including file
+      // If API returns errors, setValidationErrors(response.errors)
+      // Else, proceed with startUpload
+      const errors = simulateFileValidation(file);
+
+      if (errors.length > 0) {
+        setValidationErrors(errors);
+        return; // Do not proceed with upload if errors
+      }
+
       console.log("Starting upload from browse");
       startUpload(file);
     } else {
@@ -231,7 +272,7 @@ const DragDropZone = ({ disabled }) => {
     "div",
     {
       className:
-        "bg-white p-3md rounded-md w-[600px] border border-stat-primary-50",
+        "bg-white p-3md rounded-md w-[600px] border border-stat-primary-50 relative", // Added relative for alert positioning
     },
     [
       React.createElement(
@@ -329,6 +370,14 @@ const DragDropZone = ({ disabled }) => {
             : []),
         ]
       ),
+      // Alert is displayed if there are errors
+      validationErrors.length > 0 &&
+        React.createElement(Alert, {
+          key: "validation-alert",
+          title: "Oops. Something went wrong!",
+          errors: validationErrors,
+          onClose: () => setValidationErrors([]),
+        }),
     ]
   );
 };
