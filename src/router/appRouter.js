@@ -37,7 +37,7 @@ const AppRouter = () => {
     "div",
     {
       className: "relative top-14 bottom-14 left-0 right-0 overflow-auto",
-      style: { padding: "32px", width: "100%", height: "100%" },
+      style: { width: "100%", height: "100%" },
     },
     renderPage()
   );

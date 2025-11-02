@@ -50,25 +50,69 @@ module.exports = {
         "3lg": "16px",
         "3xl": "20px",
         "4xl": "24px",
+        "5xl": "32px",
+        "6xl": "40px",
+        "7xl": "48px",
       },
       fontSize: {
-        xs: ["12px", "16px"],
-        sm: ["14px", "20px"],
-        base: ["16px", "24px"],
-        lg: ["18px", "28px"],
-        xl: ["20px", "32px"],
-        xxl: ["24px", "36px"],
+        "xs": ["12px", "16px"],
+        "sm": ["14px", "20px"],
+        "base": ["16px", "24px"],
+        "lg": ["18px", "28px"],
+        "xl": ["20px", "32px"],
+        "xxl": ["24px", "36px"],
+        "3xl": ["28px", "40px"],
+        "4xl": ["32px", "44px"],
       },
       borderRadius: {
-        none: "0px",
-        sm: "4px",
-        md: "10px",
-        lg: "12px",
-        xl: "16px",
-        full: "9999px", // Custom rounded values beyond defaults
+        "none": "0px",
+        "sm": "4px",
+        "2sm": "8px",
+        "md": "10px",
+        "lg": "12px",
+        "xl": "16px",
+        "2xl": "20px",
+        "3xl": "24px",
+        "full": "9999px",
       },
       borderColor: {
         "stat-primary-50": "#f1f0fb",
+      },
+
+      boxShadow: {
+        "sm": "0 1px 2px 0 rgba(45, 42, 69, 0.05)",
+        "md": "0 4px 6px -1px rgba(45, 42, 69, 0.1), 0 2px 4px -1px rgba(45, 42, 69, 0.06)",
+        "lg": "0 10px 15px -3px rgba(45, 42, 69, 0.1), 0 4px 6px -2px rgba(45, 42, 69, 0.05)",
+        "xl": "0 20px 25px -5px rgba(45, 42, 69, 0.1), 0 10px 10px -5px rgba(45, 42, 69, 0.04)",
+        "2xl": "0 25px 50px -12px rgba(45, 42, 69, 0.25)",
+        "inner": "inset 0 2px 4px 0 rgba(45, 42, 69, 0.06)",
+        "none": "none",
+        "card": "0 2px 8px rgba(45, 42, 69, 0.08)",
+        "header": "0 1px 3px rgba(45, 42, 69, 0.1)",
+      },
+
+      transitionDuration: {
+        150: "150ms",
+        200: "200ms",
+        300: "300ms",
+        500: "500ms",
+        700: "700ms",
+      },
+
+      maxWidth: {
+        dashboard: "1200px", // Максимальная ширина Dashboard
+        content: "1440px", // Максимальная ширина контента
+        narrow: "800px", // Для узких форм и текстов
+      },
+
+      zIndex: {
+        "dropdown": "1000",
+        "sticky": "1020",
+        "fixed": "1030",
+        "modal-backdrop": "1040",
+        "modal": "1050",
+        "popover": "1060",
+        "tooltip": "1070",
       },
     },
   },

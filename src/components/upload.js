@@ -128,54 +128,6 @@ const UploadProgress = ({
   );
 };
 
-const ProcessingMessage = () => {
-  return React.createElement(
-    "div",
-    {
-      className:
-        "bg-white border border-stat-primary-50 rounded-md p-3lg w-full max-w-[552px]",
-    },
-    [
-      React.createElement(
-        "div",
-        {
-          key: "spinner-section",
-          className: "flex items-center justify-center gap-2.5 mb-2.5 w-full",
-        },
-        React.createElement(
-          "div",
-          {
-            className: "relative w-6 h-6",
-          },
-          React.createElement(MaterialIcon, {
-            key: "spinner",
-            name: "refresh",
-            className: "material-icons-outlined text-stat-primary animate-spin",
-          })
-        )
-      ),
-      React.createElement(
-        "div",
-        {
-          key: "main-message",
-          className:
-            "text-stat-font text-base font-semibold text-center w-full mb-2.5 font-noto",
-        },
-        "Please wait we read your data!"
-      ),
-      React.createElement(
-        "div",
-        {
-          key: "sub-message",
-          className:
-            "text-stat-font-secondary text-sm text-center w-full font-noto",
-        },
-        "It could take a couple of seconds"
-      ),
-    ]
-  );
-};
-
 const DragDropZone = ({ disabled }) => {
   const { startUpload } = useProject();
   const [isDragOver, setIsDragOver] = React.useState(false);
@@ -452,7 +404,6 @@ const AnimatedFileDropping = ({
 
 module.exports = {
   DragDropZone,
-  ProcessingMessage,
   UploadProgress,
   UPLOAD_STATES,
   AnimatedFileDropping,
