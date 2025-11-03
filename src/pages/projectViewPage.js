@@ -213,6 +213,7 @@ const ProjectViewContent = ({ project }) => {
     // Показываем Dashboard с данными
     mainContent = React.createElement(YourDataDashboard, {
       key: "data-dashboard",
+      projectId: project.id,
       projectName: project.name,
       fileName: state.currentFile?.name || "data.csv",
       onAddFile: handleAddFile,

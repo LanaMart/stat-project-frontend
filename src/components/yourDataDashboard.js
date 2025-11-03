@@ -1,38 +1,243 @@
 const React = require("react");
 const { MaterialIcon } = require("../components/button.js");
+const { TableView } = require("../components/tableView.js");
+const { parseCSV, validateParsedData } = require("../utils/csvParser.js");
+const { apiClient } = require("../components/apiClient.js");
+const Alert = require("../components/alert.js"); // Импорт Alert компонента
+const { useProject } = require("../context/projectContext.js"); // Импорт useProject
 
 /**
- * YourDataDashboard - a dashboard component with uploaded data.
+ * YourDataDashboard - Компонент dashboard с возможностью просмотра данных
  *
- * Displayed after the file has been successfully uploaded to the project.
- * Displays information about the uploaded file, the data section, and reports.
- *
+ * Поддерживает два режима:
+ * 1. Dashboard view - отображение информации о загруженном файле
+ * 2. Table view - отображение интерпретированных CSV данных в таблице
  *
  * @param {Object} props
- * @param {string} props.projectName
- * @param {string} props.fileName - name of the downloaded file
- * @param {Function} [props.onAddFile] - callback for adding a new file.
- * @param {Function} [props.onViewFile] - callback for viewing the file
- * @param {Function} [props.onDownloadFile] - callback for downloading the file
- * @param {Function} [props.onDeleteFile] - callback for deleting a file
- * @param {Function} [props.onStartAnalyze] - callback to start data analysis
+ * @param {string} props.projectId - ID текущего проекта
+ * @param {string} props.projectName - название проекта
+ * @param {string} props.fileName - имя загруженного файла
+ * @param {Function} [props.onAddFile] - callback для добавления нового файла
+ * @param {Function} [props.onDownloadFile] - callback для скачивания файла
+ * @param {Function} [props.onDeleteFile] - callback для удаления файла
  *
  * @example
  * <YourDataDashboard
+ *   projectId="project_123"
  *   projectName="My Project"
  *   fileName="Coffee_profit.csv"
- *   onStartAnalyze={() => console.log('Start analyze')}
  * />
  */
+
 const YourDataDashboard = ({
+  projectId,
   projectName,
   fileName,
   onAddFile,
-  onViewFile,
   onDownloadFile,
   onDeleteFile,
-  onStartAnalyze,
 }) => {
+  // ============================================================================
+  // STATE
+  // ============================================================================
+
+  // Режим отображения: 'dashboard' или 'table'
+  const [viewMode, setViewMode] = React.useState("dashboard");
+
+  // Данные CSV после парсинга
+  const [csvData, setCsvData] = React.useState(null);
+
+  // Состояние загрузки/парсинга
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Ошибки парсинга
+  const [parseError, setParseError] = React.useState(null);
+
+  // Состояние для Alert
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const [alertProps, setAlertProps] = React.useState({ title: "", errors: [] });
+
+  // Получаем состояние из контекста
+  const { state } = useProject();
+
+  // ============================================================================
+  // CSV INTERPRETATION
+  // ============================================================================
+
+  /**
+   * Интерпретирует CSV файл и переключается в режим таблицы
+   */
+  const interpretCSV = async () => {
+    try {
+      setIsLoading(true);
+      setParseError(null);
+
+      // Добавленная проверка: файл загружен?
+      const project = await apiClient.getProjectById(projectId);
+      if (!project) {
+        throw new Error("Project not found");
+      }
+      if (!project.hasFile || !state.hasUploadedFile) {
+        throw new Error("No file uploaded for this project");
+      }
+
+      // 1️⃣ Получаем файл из backend
+      const fileBlob = await apiClient.downloadProjectFile(projectId);
+
+      // 2️⃣ Парсим CSV
+      const parsedData = await parseCSV(fileBlob);
+
+      // 3️⃣ Валидируем данные
+      const validation = validateParsedData(parsedData);
+
+      if (!validation.valid) {
+        throw new Error(validation.errors.join(", "));
+      }
+
+      // 4️⃣ Сохраняем данные и переключаемся в режим таблицы
+      setCsvData(parsedData);
+      setViewMode("table");
+
+      console.log("✅ CSV interpreted successfully:", {
+        rows: parsedData.totalRows,
+        columns: parsedData.totalColumns,
+      });
+    } catch (error) {
+      console.error("❌ CSV interpretation error:", error);
+      setParseError(error.message);
+
+      // Показываем Alert вместо обычного alert
+      setAlertProps({
+        title: "Failed to interpret CSV",
+        errors: [error.message],
+      });
+      setAlertVisible(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  /**
+   * Обработчик для кнопки "Start data analyze"
+   */
+  const handleStartAnalyze = () => {
+    console.log("🔍 Starting CSV interpretation...");
+    interpretCSV();
+  };
+
+  /**
+   * Обработчик для кнопки "View file"
+   */
+  const handleViewFile = () => {
+    console.log("👁️ Viewing file...");
+    interpretCSV();
+  };
+
+  /**
+   * Обработчик для кнопки "Back to dashboard"
+   */
+  const handleBackToDashboard = () => {
+    setViewMode("dashboard");
+    setCsvData(null);
+    setParseError(null);
+  };
+
+  /**
+   * Обработчик для кнопки "Next step"
+   */
+  const handleNextStep = () => {
+    console.log("➡️ Moving to next step with selected data:", csvData);
+    // TODO: Implement next step logic (e.g., navigate to validation/wizard)
+    // Показываем Alert вместо обычного alert
+    setAlertProps({
+      title: "Next Step",
+      errors: ["Functionality will be implemented in the next phase"],
+    });
+    setAlertVisible(true);
+  };
+
+  /**
+   * Обработчик скачивания файла
+   */
+  const handleDownload = async () => {
+    if (onDownloadFile) {
+      onDownloadFile();
+      return;
+    }
+
+    try {
+      const fileBlob = await apiClient.downloadProjectFile(projectId);
+      const url = URL.createObjectURL(fileBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName || "download.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error);
+      // Показываем Alert
+      setAlertProps({
+        title: "Download Failed",
+        errors: ["Failed to download file"],
+      });
+      setAlertVisible(true);
+    }
+  };
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
+  // Если загружается - показываем индикатор
+  if (isLoading) {
+    return React.createElement(
+      "div",
+      {
+        className:
+          "flex flex-col gap-4xl w-full px-4xl flex-1 items-center justify-center",
+      },
+      [
+        React.createElement("div", {
+          key: "spinner",
+          className:
+            "animate-spin rounded-full h-12 w-12 border-b-2 border-stat-primary",
+        }),
+        React.createElement(
+          "p",
+          {
+            key: "loading-text",
+            className: "font-noto text-base text-stat-font",
+          },
+          "Interpreting CSV data..."
+        ),
+      ]
+    );
+  }
+
+  // Если режим таблицы - показываем TableView
+  if (viewMode === "table" && csvData) {
+    return React.createElement(
+      "div",
+      {
+        className: "flex flex-col gap-4xl w-full px-4xl flex-1",
+      },
+      React.createElement(TableView, {
+        headers: csvData.headers,
+        rows: csvData.rows,
+        columnTypes: csvData.columnTypes,
+        onBack: handleBackToDashboard,
+        onNext: handleNextStep,
+      })
+    );
+  }
+
+  // Иначе показываем Dashboard view
   return React.createElement(
     "div",
     {
@@ -40,6 +245,15 @@ const YourDataDashboard = ({
       "data-component": "YourDataDashboard",
     },
     [
+      // Alert компонент, если visible
+      alertVisible &&
+        React.createElement(Alert, {
+          key: "custom-alert",
+          title: alertProps.title,
+          errors: alertProps.errors,
+          onClose: () => setAlertVisible(false),
+        }),
+
       // ====================================================================
       // DASHBOARD HEADER
       // ====================================================================
@@ -158,7 +372,7 @@ const YourDataDashboard = ({
                           className:
                             "font-noto font-bold text-base leading-4xl text-stat-primary whitespace-nowrap",
                         },
-                        fileName || "Coffee_ptofit.csv"
+                        fileName || "Coffee_profit.csv"
                       ),
                     ]
                   ),
@@ -178,7 +392,7 @@ const YourDataDashboard = ({
                           "key": "view-btn",
                           "className":
                             "flex items-center border border-stat-primary-50 p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
-                          "onClick": onViewFile,
+                          "onClick": handleViewFile,
                           "type": "button",
                           "aria-label": "View file",
                         },
@@ -195,8 +409,8 @@ const YourDataDashboard = ({
                         {
                           "key": "download-btn",
                           "className":
-                            "flex items-center border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
-                          "onClick": onDownloadFile,
+                            "flex items-center border border-stat-primary-50 p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
+                          "onClick": handleDownload,
                           "type": "button",
                           "aria-label": "Download file",
                         },
@@ -213,7 +427,7 @@ const YourDataDashboard = ({
                         {
                           "key": "delete-btn",
                           "className":
-                            "flex items-center border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex items-center border border-stat-primary-50 p-xs w-[36px] h-[36px] rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onDeleteFile,
                           "type": "button",
                           "aria-label": "Delete file",
@@ -233,14 +447,14 @@ const YourDataDashboard = ({
                 "div",
                 {
                   key: "analyze-btn-container",
-                  className: " analyzeButton flex flex-col items-start w-full",
+                  className: "analyzeButton flex flex-col items-start w-full",
                 },
                 React.createElement(
                   "button",
                   {
                     className:
                       "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
-                    onClick: onStartAnalyze,
+                    onClick: handleStartAnalyze,
                     type: "button",
                   },
                   [
@@ -312,6 +526,24 @@ const YourDataDashboard = ({
           ),
         ]
       ),
+
+      // Ошибки парсинга (если есть)
+      parseError &&
+        React.createElement(
+          "div",
+          {
+            key: "parse-error",
+            className:
+              "bg-stat-error-50 border border-stat-error-200 rounded-2sm p-3lg",
+          },
+          React.createElement(
+            "p",
+            {
+              className: "font-noto text-sm text-stat-error-700",
+            },
+            `Error: ${parseError}`
+          )
+        ),
     ]
   );
 };

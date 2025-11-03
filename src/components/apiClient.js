@@ -12,9 +12,31 @@
 // ============================================================================
 
 const mockStorage = {
-  projects: [],
-  projectFiles: {}, // { projectId: { file: File, metadata: {...} } }
-  projectStates: {}, // { projectId: { state, uploadSubState, ... } }
+  projects: [
+    {
+      id: "test_project",
+      name: "Test Project",
+      createdAt: new Date().toISOString(),
+    },
+  ],
+  projectFiles: {
+    test_project: {
+      file: new Blob(["header1,header2\n1,2\n3,4"], { type: "text/csv" }), // Mock CSV content
+      metadata: {
+        name: "test.csv",
+        size: 20,
+        type: "text/csv",
+        uploadedAt: new Date().toISOString(),
+      },
+    },
+  },
+  projectStates: {
+    test_project: {
+      projectState: "interpretation",
+      uploadSubState: "idle",
+      hasUploadedFile: true,
+    },
+  },
 };
 
 // ============================================================================
@@ -24,7 +46,7 @@ const mockStorage = {
 /**
  * Симулирует задержку сети
  */
-const simulateNetworkDelay = (ms = 300) => {
+const simulateNetworkDelay = (ms = 200) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
@@ -175,28 +197,22 @@ const apiClient = {
     // Body: FormData with file
     // Headers: { Authorization: `Bearer ${token}` }
 
-    await simulateNetworkDelay(500);
+    await simulateNetworkDelay();
 
     const errors = validateFile(file);
 
     if (errors.length > 0) {
-      return Promise.reject({
-        valid: false,
-        errors: errors,
-      });
+      return Promise.reject({ errors });
     }
 
-    return Promise.resolve({
-      valid: true,
-      errors: [],
-    });
+    return Promise.resolve({ valid: true });
   },
 
   /**
-   * Загрузка файла в проект
+   * Загрузить файл в проект
    * @param {string} projectId
    * @param {File} file - файл для загрузки
-   * @param {Function} onProgress - callback для отслеживания прогресса (0-100)
+   * @param {Function} onProgress - callback прогресса загрузки
    * @returns {Promise<Object>} - результат загрузки
    */
   uploadFile: async (projectId, file, onProgress) => {
@@ -204,26 +220,14 @@ const apiClient = {
     // POST /api/projects/{projectId}/files
     // Body: FormData with file
     // Headers: { Authorization: `Bearer ${token}` }
-    // Use XMLHttpRequest or fetch with ReadableStream for progress tracking
+    // onProgress: XMLHttpRequest.upload.onprogress
 
-    // Валидация файла
-    const errors = validateFile(file);
-    if (errors.length > 0) {
-      return Promise.reject({
-        success: false,
-        errors: errors,
-      });
-    }
+    await simulateNetworkDelay(500);
 
-    // Симуляция загрузки с прогрессом
-    const uploadDuration = 2000; // 2 секунды
-    const steps = 20;
-    const stepDuration = uploadDuration / steps;
-
-    for (let i = 0; i <= steps; i++) {
-      await simulateNetworkDelay(stepDuration);
-      const progress = Math.min((i / steps) * 100, 100);
-      if (onProgress) onProgress(progress);
+    // Симулируем прогресс
+    for (let i = 0; i <= 100; i += 20) {
+      await simulateNetworkDelay(200);
+      if (onProgress) onProgress(i);
     }
 
     // Сохраняем файл в mock storage
