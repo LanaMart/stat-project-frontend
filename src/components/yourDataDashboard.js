@@ -125,7 +125,7 @@ const YourDataDashboard = ({
             {
               key: "file-card",
               className:
-                "bg-white border border-stat-primary-50 rounded-2sm p-3lg flex flex-col gap-3md w-full",
+                "fileCard bg-white border border-stat-primary-50 rounded-2sm p-3lg flex flex-col gap-3md w-full",
             },
             [
               // File line with actions
@@ -133,7 +133,8 @@ const YourDataDashboard = ({
                 "div",
                 {
                   key: "file-line",
-                  className: "flex items-center justify-between w-full",
+                  className:
+                    "fileLine flex items-center justify-between w-full",
                 },
                 [
                   // File name with icon
@@ -176,7 +177,7 @@ const YourDataDashboard = ({
                         {
                           "key": "view-btn",
                           "className":
-                            "flex border border-stat-primary-50 p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex items-center border border-stat-primary-50 p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onViewFile,
                           "type": "button",
                           "aria-label": "View file",
@@ -194,7 +195,7 @@ const YourDataDashboard = ({
                         {
                           "key": "download-btn",
                           "className":
-                            "flex border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex items-center border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onDownloadFile,
                           "type": "button",
                           "aria-label": "Download file",
@@ -212,7 +213,7 @@ const YourDataDashboard = ({
                         {
                           "key": "delete-btn",
                           "className":
-                            "flex border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] items-center rounded-sm hover:bg-stat-bg transition-colors",
+                            "flex items-center border border-stat-primary-50 p-xs p-xs w-[36px] h-[36px] rounded-sm hover:bg-stat-bg transition-colors",
                           "onClick": onDeleteFile,
                           "type": "button",
                           "aria-label": "Delete file",
@@ -227,41 +228,40 @@ const YourDataDashboard = ({
                   ),
                 ]
               ),
-            ]
-          ),
-
-          // Start analyze button
-          React.createElement(
-            "div",
-            {
-              key: "analyze-btn-container",
-              className: "flex flex-col items-end w-full",
-            },
-            React.createElement(
-              "button",
-              {
-                className:
-                  "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
-                onClick: onStartAnalyze,
-                type: "button",
-              },
-              [
-                React.createElement(MaterialIcon, {
-                  key: "arrow-icon",
-                  name: "arrow_forward",
-                  className: "material-icons text-stat-old-bg text-2xl",
-                }),
+              // Start analyze button
+              React.createElement(
+                "div",
+                {
+                  key: "analyze-btn-container",
+                  className: " analyzeButton flex flex-col items-start w-full",
+                },
                 React.createElement(
-                  "p",
+                  "button",
                   {
-                    key: "btn-text",
                     className:
-                      "font-noto font-normal text-base leading-4xl text-stat-old-bg whitespace-nowrap",
+                      "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
+                    onClick: onStartAnalyze,
+                    type: "button",
                   },
-                  "Start data analyze"
-                ),
-              ]
-            )
+                  [
+                    React.createElement(MaterialIcon, {
+                      key: "arrow-icon",
+                      name: "arrow_forward",
+                      className: "material-icons text-stat-old-bg text-2xl",
+                    }),
+                    React.createElement(
+                      "p",
+                      {
+                        key: "btn-text",
+                        className:
+                          "font-noto font-normal text-base leading-4xl text-stat-old-bg whitespace-nowrap",
+                      },
+                      "Start data analyze"
+                    ),
+                  ]
+                )
+              ),
+            ]
           ),
         ]
       ),

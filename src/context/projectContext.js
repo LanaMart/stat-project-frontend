@@ -1,19 +1,10 @@
 const React = require("react");
-const { openDB } = require("idb");
+const { apiClient } = require("../components/apiClient.js");
 
 // ============================================================================
-// STATE CONSTANTS
+// STATE CONSTANTS (single source of truth for states)
 // ============================================================================
 
-/**
- * PROJECT_STATES - основные состояния проекта
- * UPLOAD - загрузка файла (начальное состояние)
- * INTERPRETATION - файл загружен, показываем dashboard с данными
- * VALIDATION - валидация данных
- * WIZARD - режим визарда для настройки
- * VISUALIZATION - визуализация данных
- * RESULT - результат (после отмены или ошибки)
- */
 const PROJECT_STATES = {
   UPLOAD: "upload",
   INTERPRETATION: "interpretation",
@@ -23,19 +14,12 @@ const PROJECT_STATES = {
   RESULT: "result",
 };
 
-/**
- * UPLOAD_STATES - подсостояния процесса загрузки
- * IDLE - ожидание загрузки файла (показываем DragDropZone)
- * UPLOADING - идёт загрузка файла
- * SUCCESS - файл успешно загружен
- * PROCESSING - идёт обработка файла (показываем прогресс)
- * ⚠️ REPORT_READY удалён - сразу переход к INTERPRETATION
- */
 const UPLOAD_STATES = {
   IDLE: "idle",
   UPLOADING: "uploading",
   SUCCESS: "success",
   PROCESSING: "processing",
+  REPORT_READY: "report_ready", // Added to match upload.js definition
 };
 
 // ============================================================================
@@ -49,9 +33,8 @@ const initialState = {
   progress: 0,
   processingTimeEstimate: null,
   projectMeta: { name: "", createdAt: "" },
-  // 🔄 API INTEGRATION POINT: В будущем здесь будут данные из API
-  hasUploadedFile: false, // Флаг наличия загруженного файла
-  lastUploadedAt: null, // Дата последней загрузки
+  hasUploadedFile: false,
+  lastUploadedAt: null,
 };
 
 // ============================================================================
@@ -67,11 +50,9 @@ const ProjectContext = React.createContext();
 const projectReducer = (prev, action) => {
   switch (action.type) {
     case "SET_STATE":
-      // Полная перезапись состояния (используется при загрузке из localStorage)
       return { ...prev, ...action.payload };
 
     case "START_UPLOAD":
-      // Начало загрузки файла
       return {
         ...prev,
         projectState: PROJECT_STATES.UPLOAD,
@@ -81,30 +62,19 @@ const projectReducer = (prev, action) => {
       };
 
     case "UPDATE_PROGRESS":
-      // Обновление прогресса загрузки
       return {
         ...prev,
         progress: Math.min(action.progress, 100),
       };
 
     case "SET_SUCCESS":
-      // Загрузка завершена успешно → переход к обработке
       return {
         ...prev,
         uploadSubState: UPLOAD_STATES.SUCCESS,
-      };
-
-    case "SET_PROCESSING":
-      // Начало обработки файла на бэкенде
-      return {
-        ...prev,
-        uploadSubState: UPLOAD_STATES.PROCESSING,
-        processingTimeEstimate: action.estimate || "2 minutes",
+        progress: 100,
       };
 
     case "COMPLETE_UPLOAD":
-      // ⚠️ Изменено: сразу переход к Dashboard без промежуточного состояния
-      // Обработка завершена → переход к просмотру данных (Your Data Dashboard)
       return {
         ...prev,
         uploadSubState: UPLOAD_STATES.IDLE,
@@ -114,15 +84,7 @@ const projectReducer = (prev, action) => {
         progress: 100,
       };
 
-    case "RESET":
-      // Сброс к начальному состоянию (отмена загрузки)
-      return {
-        ...initialState,
-        projectMeta: prev.projectMeta, // Сохраняем метаданные проекта
-      };
-
     case "CANCEL_UPLOAD":
-      // Отмена загрузки → возврат к DragDropZone
       return {
         ...prev,
         projectState: PROJECT_STATES.UPLOAD,
@@ -130,6 +92,12 @@ const projectReducer = (prev, action) => {
         currentFile: null,
         progress: 0,
         processingTimeEstimate: null,
+      };
+
+    case "RESET":
+      return {
+        ...initialState,
+        projectMeta: prev.projectMeta,
       };
 
     default:
@@ -141,14 +109,6 @@ const projectReducer = (prev, action) => {
 // PROVIDER COMPONENT
 // ============================================================================
 
-/**
- * ProjectProvider - контекст для управления состоянием проекта
- *
- * @param {Object} props
- * @param {string} props.projectId - ID проекта
- * @param {Object} props.initialMeta - начальные метаданные проекта (name, createdAt)
- * @param {ReactNode} props.children - дочерние компоненты
- */
 const ProjectProvider = ({
   children,
   projectId = "default",
@@ -159,268 +119,154 @@ const ProjectProvider = ({
     projectMeta: initialMeta,
   });
 
-  // Флаг для отслеживания первой загрузки
-  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
-
-  // Ref для отслеживания текущего projectId (anti-race condition)
+  const [isLoading, setIsLoading] = React.useState(true);
   const currentProjectIdRef = React.useRef(projectId);
 
   React.useEffect(() => {
-    currentProjectIdRef.current = projectId; // Обновляем ref при смене projectId
+    currentProjectIdRef.current = projectId;
   }, [projectId]);
 
   // ============================================================================
-  // LOAD STATE FROM STORAGE (on mount)
+  // LOAD PROJECT DATA FROM BACKEND
   // ============================================================================
+
   React.useEffect(() => {
-    setIsInitialLoad(true); // Сброс флага на true при каждой смене projectId, чтобы предотвратить преждевременный save
-    const loadProjectState = async () => {
-      const loadId = projectId; // Захватываем текущий ID для проверки после async
+    let isCancelled = false;
+
+    const loadProjectData = async () => {
+      const loadId = projectId;
+      setIsLoading(true);
+
       try {
-        // 🔄 API INTEGRATION POINT: Замените на GET /api/projects/{projectId}/state
-        // const response = await fetch(`/api/projects/${projectId}/state`, { signal: abortController.signal });
-        // const savedState = await response.json();
-        // if (!response.ok) throw new Error('API error');
+        const projectData = await apiClient.getProjectById(loadId);
+        console.log("Project data:", projectData);
 
-        // Загружаем состояние из localStorage
-        const json = localStorage.getItem(`project_data_${loadId}`);
+        if (isCancelled || currentProjectIdRef.current !== loadId) return;
 
-        // После async: проверка на актуальность projectId
-        if (currentProjectIdRef.current !== loadId) return; // Игнорируем, если проект изменился
-
-        if (json) {
-          const savedState = JSON.parse(json);
-
-          // Проверяем, есть ли сохранённый файл
-          // Если файл был загружен ранее → сразу показываем Dashboard
-          if (
-            savedState.hasUploadedFile ||
-            savedState.projectState === PROJECT_STATES.INTERPRETATION
-          ) {
-            dispatch({
-              type: "SET_STATE",
-              payload: {
-                ...savedState,
-                projectState: PROJECT_STATES.INTERPRETATION,
-                uploadSubState: UPLOAD_STATES.IDLE,
-                hasUploadedFile: true,
-              },
-            });
-          } else {
-            // Файл не загружен → показываем DragDropZone
-            dispatch({
-              type: "SET_STATE",
-              payload: {
-                ...savedState,
-                projectState: PROJECT_STATES.UPLOAD,
-                uploadSubState: UPLOAD_STATES.IDLE,
-              },
-            });
-          }
-        } else {
-          // Новый проект → начальное состояние (DragDropZone)
+        if (!projectData) {
+          // Если данных нет — показываем Upload
           dispatch({
             type: "SET_STATE",
             payload: {
               projectState: PROJECT_STATES.UPLOAD,
               uploadSubState: UPLOAD_STATES.IDLE,
               hasUploadedFile: false,
+              currentFile: null,
+              projectMeta: { name: "", createdAt: "" },
             },
           });
+        } else {
+          const hasFile = projectData.hasFile || false;
+
+          const safeFile = projectData.fileName
+            ? {
+                name: projectData.fileName,
+                size: projectData.fileSize || 0,
+              }
+            : null;
+
+          if (hasFile) {
+            dispatch({
+              type: "SET_STATE",
+              payload: {
+                projectState: PROJECT_STATES.INTERPRETATION,
+                uploadSubState: UPLOAD_STATES.IDLE,
+                currentFile: safeFile,
+                hasUploadedFile: true,
+                lastUploadedAt: projectData.uploadedAt || null,
+                projectMeta: {
+                  name: projectData.name || "",
+                  createdAt: projectData.createdAt || "",
+                },
+              },
+            });
+          } else {
+            dispatch({
+              type: "SET_STATE",
+              payload: {
+                projectState: PROJECT_STATES.UPLOAD,
+                uploadSubState: UPLOAD_STATES.IDLE,
+                currentFile: null,
+                hasUploadedFile: false,
+                projectMeta: {
+                  name: projectData.name || "",
+                  createdAt: projectData.createdAt || "",
+                },
+              },
+            });
+          }
         }
+      } catch (error) {
+        console.error("❌ Error loading project data:", error);
 
-        // 🔄 API INTEGRATION POINT: Загрузка метаданных файла
-        // const fileMetadata = await fetch(`/api/projects/${projectId}/file`, { signal: abortController.signal });
-        // if (fileMetadata.exists) { ... }
-
-        // Загружаем файл из IndexedDB (если есть)
-        const db = await openDB("ProjectDB", 1, {
-          upgrade(db) {
-            if (!db.objectStoreNames.contains("files")) {
-              db.createObjectStore("files");
-            }
-          },
-        });
-
-        const file = await db.get("files", `file_${loadId}`);
-        if (currentProjectIdRef.current !== loadId) return; // Проверка после async
-        if (file) {
-          dispatch({
-            type: "SET_STATE",
-            payload: { currentFile: file },
-          });
-        }
-      } catch (err) {
-        console.error("❌ Error loading project state:", err);
-        // В случае ошибки - начальное состояние
-        if (currentProjectIdRef.current === loadId) {
+        if (!isCancelled && currentProjectIdRef.current === loadId) {
           dispatch({
             type: "SET_STATE",
             payload: {
               projectState: PROJECT_STATES.UPLOAD,
               uploadSubState: UPLOAD_STATES.IDLE,
+              currentFile: null,
+              hasUploadedFile: false,
             },
           });
         }
       } finally {
-        if (currentProjectIdRef.current === loadId) {
-          setIsInitialLoad(false);
+        if (!isCancelled && currentProjectIdRef.current === loadId) {
+          setIsLoading(false);
         }
       }
     };
 
-    // 🔄 API INTEGRATION POINT: Для отмены запросов при unmount или смене проекта
-    // const abortController = new AbortController();
-    // loadProjectState();
-    // return () => abortController.abort();
+    loadProjectData();
 
-    loadProjectState();
+    return () => {
+      isCancelled = true;
+    };
   }, [projectId]);
 
   // ============================================================================
-  // AUTO-SAVE STATE TO STORAGE
-  // ============================================================================
-  React.useEffect(() => {
-    // Не сохраняем при первой загрузке (пока грузим данные)
-    if (isInitialLoad) return;
-
-    const saveProjectState = async () => {
-      const saveId = projectId; // Захватываем ID
-      try {
-        // 🔄 API INTEGRATION POINT: Замените на POST /api/projects/{projectId}/state
-        // await fetch(`/api/projects/${projectId}/state`, {
-        //   method: 'POST',
-        //   body: JSON.stringify(state),
-        //   signal: abortController.signal
-        // });
-
-        // Сохраняем состояние в localStorage
-        localStorage.setItem(
-          `project_data_${saveId}`,
-          JSON.stringify({
-            projectState: state.projectState,
-            uploadSubState: state.uploadSubState,
-            progress: state.progress,
-            processingTimeEstimate: state.processingTimeEstimate,
-            projectMeta: state.projectMeta,
-            hasUploadedFile: state.hasUploadedFile,
-            lastUploadedAt: state.lastUploadedAt,
-            // Не сохраняем currentFile (он в IndexedDB)
-          })
-        );
-
-        // 🔄 API INTEGRATION POINT: Сохранение файла
-        // if (state.currentFile) {
-        //   const formData = new FormData();
-        //   formData.append('file', state.currentFile);
-        //   await fetch(`/api/projects/${projectId}/file`, {
-        //     method: 'POST',
-        //     body: formData,
-        //     signal: abortController.signal
-        //   });
-        // }
-
-        // Сохраняем файл в IndexedDB
-        if (state.currentFile) {
-          const db = await openDB("ProjectDB", 1);
-          await db.put("files", state.currentFile, `file_${saveId}`);
-        }
-      } catch (err) {
-        console.error("❌ Error saving project state:", err);
-      }
-    };
-
-    saveProjectState(); // Немедленное сохранение (можно добавить debounce на state, если нужно)
-
-    // 🔄 API INTEGRATION POINT: Для отмены в будущем
-    // const abortController = new AbortController();
-    // return () => abortController.abort();
-  }, [state, projectId, isInitialLoad]);
-
-  // ============================================================================
-  // UPLOAD SIMULATION (for development)
-  // ============================================================================
-  React.useEffect(() => {
-    if (state.uploadSubState !== UPLOAD_STATES.UPLOADING) return;
-
-    // 🔄 API INTEGRATION POINT: Замените на реальный upload
-    // const uploadFile = async () => {
-    //   const formData = new FormData();
-    //   formData.append('file', state.currentFile);
-    //
-    //   const response = await fetch(`/api/projects/${projectId}/upload`, {
-    //     method: 'POST',
-    //     body: formData,
-    //     onUploadProgress: (progressEvent) => {
-    //       const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-    //       dispatch({ type: "UPDATE_PROGRESS", progress: percentCompleted });
-    //     }
-    //   });
-    //
-    //   if (response.ok) {
-    //     dispatch({ type: "SET_SUCCESS" });
-    //     dispatch({ type: "SET_PROCESSING", estimate: response.data.estimatedTime });
-    //
-    //     // Poll for processing status
-    //     const checkStatus = setInterval(async () => {
-    //       const status = await fetch(`/api/projects/${projectId}/status`);
-    //       if (status.data.ready) {
-    //         clearInterval(checkStatus);
-    //         dispatch({ type: "COMPLETE_UPLOAD" });
-    //       }
-    //     }, 1000);
-    //   }
-    // };
-    //
-    // uploadFile();
-
-    // ⚠️ Упрощённая симуляция: UPLOADING → SUCCESS → Dashboard сразу!
-    // Симуляция загрузки (удалить при интеграции с API)
-    const interval = setInterval(() => {
-      const newProgress = Math.min(
-        state.progress + Math.random() * 15 + 5,
-        100
-      );
-
-      if (newProgress >= 100) {
-        clearInterval(interval);
-        // Переход: UPLOADING → SUCCESS → Dashboard сразу!
-        setTimeout(() => dispatch({ type: "SET_SUCCESS" }), 800);
-        setTimeout(() => dispatch({ type: "COMPLETE_UPLOAD" }), 1500);
-      } else {
-        dispatch({ type: "UPDATE_PROGRESS", progress: newProgress });
-      }
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, [state.uploadSubState, state.progress, projectId]);
-
-  // ============================================================================
-  // CONTEXT API
+  // CONTEXT API METHODS
   // ============================================================================
 
-  /**
-   * startUpload - начать загрузку файла
-   * @param {File} file - файл для загрузки
-   */
-  const startUpload = (file) => {
+  const startUpload = async (file) => {
     dispatch({ type: "START_UPLOAD", file });
+
+    try {
+      const result = await apiClient.uploadFile(projectId, file, (progress) => {
+        dispatch({ type: "UPDATE_PROGRESS", progress });
+      });
+
+      dispatch({ type: "SET_SUCCESS" });
+
+      setTimeout(() => {
+        dispatch({ type: "COMPLETE_UPLOAD" });
+      }, 1000);
+
+      return result;
+    } catch (error) {
+      console.error("❌ Upload error:", error);
+      dispatch({ type: "CANCEL_UPLOAD" });
+      throw error;
+    }
   };
 
-  /**
-   * cancelUpload - отменить текущую загрузку
-   */
   const cancelUpload = () => {
     dispatch({ type: "CANCEL_UPLOAD" });
   };
 
-  /**
-   * resetProject - полный сброс проекта (очистка данных)
-   */
-  const resetProject = () => {
-    // 🔄 API INTEGRATION POINT: DELETE /api/projects/{projectId}/file
-    dispatch({ type: "RESET" });
+  const resetProject = async () => {
+    try {
+      await apiClient.deleteProjectFile(projectId);
+      dispatch({ type: "RESET" });
+    } catch (error) {
+      console.error("❌ Error resetting project:", error);
+      throw error;
+    }
   };
+
+  // ============================================================================
+  // CONTEXT VALUE
+  // ============================================================================
 
   const value = {
     state,
@@ -429,7 +275,7 @@ const ProjectProvider = ({
     resetProject,
     PROJECT_STATES,
     UPLOAD_STATES,
-    isLoading: isInitialLoad,
+    isLoading,
   };
 
   return React.createElement(ProjectContext.Provider, { value }, children);
@@ -439,10 +285,6 @@ const ProjectProvider = ({
 // HOOK
 // ============================================================================
 
-/**
- * useProject - хук для доступа к контексту проекта
- * @returns {Object} контекст проекта
- */
 const useProject = () => {
   const context = React.useContext(ProjectContext);
 
@@ -452,9 +294,9 @@ const useProject = () => {
     );
     return {
       state: initialState,
-      startUpload: () => {},
+      startUpload: () => Promise.resolve(),
       cancelUpload: () => {},
-      resetProject: () => {},
+      resetProject: () => Promise.resolve(),
       PROJECT_STATES,
       UPLOAD_STATES,
       isLoading: false,
