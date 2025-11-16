@@ -29,7 +29,7 @@ const Alert = ({ title, errors, onClose }) => {
         setTimeout(() => {
           if (onClose) onClose();
         }, 300);
-      }, 5000); // Автозакрытие через 5 секунд
+      }, 70000); // Автозакрытие через 5 секунд
 
       return () => clearTimeout(timer);
     }
@@ -56,7 +56,7 @@ const Alert = ({ title, errors, onClose }) => {
     "div",
     {
       className:
-        "absolute top-0 left-0 right-0 w-auto bg-stat-error-50 border border-stat-error-100 rounded-md p-3lg shadow-lg transition-opacity duration-300 ease-in-out z-50",
+        "alert absolute top-0 left-0 w-full bg-stat-error-50 border border-stat-error-100 rounded-md p-3lg shadow-lg transition-opacity duration-300 ease-in-out z-50",
       style: {
         opacity: isVisible ? 1 : 0,
       },

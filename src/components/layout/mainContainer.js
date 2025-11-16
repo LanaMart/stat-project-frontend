@@ -5,7 +5,7 @@ const ContentContainer = ({ children }) => {
   return React.createElement(
     "div",
     {
-      className: "flex flex-co w-full h-full",
+      className: "mainContainer flex flex-co w-full h-full",
     },
     children
   );

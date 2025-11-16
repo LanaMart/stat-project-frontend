@@ -1,14 +1,13 @@
 /**
  * apiClient.js - Mock Backend API Interface
+ * This file simulates working with the Cloud Backend API.
+ * In the future, all functions will be replaced with real HTTP requests.
  *
- * Этот файл имитирует работу с Cloud Backend API.
- * В будущем все функции будут заменены на реальные HTTP-запросы.
- *
- * Все методы возвращают Promises и имитируют асинхронное поведение API.
+ * All methods return Promises and simulate the asynchronous behavior of the API.
  */
 
 // ============================================================================
-// MOCK DATA STORAGE (временное хранилище для разработки)
+// MOCK DATA STORAGE (temporary storage for development)
 // ============================================================================
 
 const mockStorage = {
@@ -44,19 +43,19 @@ const mockStorage = {
 // ============================================================================
 
 /**
- * Симулирует задержку сети
+ * Simulates network latency
  */
 const simulateNetworkDelay = (ms = 200) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 /**
- * Симулирует валидацию файла на backend
+ * Simulates file validation on the backend
  */
 const validateFile = (file) => {
   const errors = [];
 
-  // Проверка типа файла
+  // check the file type
   const allowedTypes = [
     "text/csv",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -66,12 +65,12 @@ const validateFile = (file) => {
     errors.push("Invalid file type. Only CSV, or XLSX allowed.");
   }
 
-  // Проверка размера (макс 10MB)
+  // check the size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
     errors.push("File too large. Maximum size is 10MB.");
   }
 
-  // Симуляция случайной ошибки сервера (5% вероятность)
+  // Simulates a random server error (5% probability)
   if (Math.random() < 0.05) {
     errors.push("Server validation error. Please try again.");
   }
@@ -89,8 +88,8 @@ const apiClient = {
   // ==========================================================================
 
   /**
-   * Получить список всех проектов пользователя
-   * @returns {Promise<Array>} - список проектов
+   * Get a list of all user projects
+   * @returns {Promise<Array>} - project lists
    */
   getProjects: async () => {
     // TODO: connect to backend API here
@@ -102,9 +101,9 @@ const apiClient = {
   },
 
   /**
-   * Создать новый проект
-   * @param {Object} projectData - данные проекта (name, description)
-   * @returns {Promise<Object>} - созданный проект с id
+   * Create a new project through the sidebar
+   * @param {Object} projectData - (name, description of the project)
+   * @returns {Promise<Object>} - created project with uniq id
    */
   createProject: async (projectData) => {
     // TODO: connect to backend API here
@@ -132,9 +131,9 @@ const apiClient = {
   },
 
   /**
-   * Получить информацию о проекте по ID
+   * Get project information by ID / to change between projects, work in specific project
    * @param {string} projectId
-   * @returns {Promise<Object>} - данные проекта
+   * @returns {Promise<Object>} - project data
    */
   getProjectById: async (projectId) => {
     // TODO: connect to backend API here
@@ -162,9 +161,9 @@ const apiClient = {
   },
 
   /**
-   * Удалить проект
+   * Delete project
    * @param {string} projectId
-   * @returns {Promise<Object>} - результат удаления
+   * @returns {Promise<Object>} - result of delete
    */
   deleteProject: async (projectId) => {
     // TODO: connect to backend API here
@@ -187,9 +186,9 @@ const apiClient = {
   // ==========================================================================
 
   /**
-   * Валидация файла перед загрузкой
-   * @param {File} file - файл для валидации
-   * @returns {Promise<Object>} - результат валидации
+   * Validating a file before uploading
+   * @param {File} file - file for validation
+   * @returns {Promise<Object>} - resukt of validation
    */
   validateFile: async (file) => {
     // TODO: connect to backend API here
@@ -209,11 +208,11 @@ const apiClient = {
   },
 
   /**
-   * Загрузить файл в проект
+   * Upload a file to the project
    * @param {string} projectId
-   * @param {File} file - файл для загрузки
-   * @param {Function} onProgress - callback прогресса загрузки
-   * @returns {Promise<Object>} - результат загрузки
+   * @param {File} file - file for download
+   * @param {Function} onProgress - download progress callback
+   * @returns {Promise<Object>} - download result
    */
   uploadFile: async (projectId, file, onProgress) => {
     // TODO: connect to backend API here
@@ -224,13 +223,13 @@ const apiClient = {
 
     await simulateNetworkDelay(500);
 
-    // Симулируем прогресс
+    // Simulating progress
     for (let i = 0; i <= 100; i += 20) {
       await simulateNetworkDelay(200);
       if (onProgress) onProgress(i);
     }
 
-    // Сохраняем файл в mock storage
+    // Saving the file to mock storage
     const metadata = {
       name: file.name,
       size: file.size,
@@ -243,7 +242,7 @@ const apiClient = {
       metadata: metadata,
     };
 
-    // Обновляем состояние проекта
+    // Updating the project status
     mockStorage.projectStates[projectId] = {
       ...mockStorage.projectStates[projectId],
       hasUploadedFile: true,
@@ -258,9 +257,9 @@ const apiClient = {
   },
 
   /**
-   * Получить метаданные файла проекта
+   * Get project file metadata
    * @param {string} projectId
-   * @returns {Promise<Object>} - метаданные файла
+   * @returns {Promise<Object>} - file metadata
    */
   getProjectFile: async (projectId) => {
     // TODO: connect to backend API here
@@ -282,9 +281,9 @@ const apiClient = {
   },
 
   /**
-   * Удалить файл из проекта
+   * Remove file from project
    * @param {string} projectId
-   * @returns {Promise<Object>} - результат удаления
+   * @returns {Promise<Object>} - result of deletion
    */
   deleteProjectFile: async (projectId) => {
     // TODO: connect to backend API here
@@ -295,7 +294,7 @@ const apiClient = {
 
     delete mockStorage.projectFiles[projectId];
 
-    // Обновляем состояние проекта
+    // Updating the project status
     if (mockStorage.projectStates[projectId]) {
       mockStorage.projectStates[projectId] = {
         projectState: "upload",
@@ -308,9 +307,9 @@ const apiClient = {
   },
 
   /**
-   * Скачать файл проекта
+   * Download the project file
    * @param {string} projectId
-   * @returns {Promise<Blob>} - файл для скачивания
+   * @returns {Promise<Blob>} - file for download
    */
   downloadProjectFile: async (projectId) => {
     // TODO: connect to backend API here
@@ -330,13 +329,13 @@ const apiClient = {
   },
 
   // ==========================================================================
-  // STATE MANAGEMENT (optional - if you want to save UI state on backend)
+  // STATE MANAGEMENT (to save UI state of the project on backend)
   // ==========================================================================
 
   /**
-   * Получить состояние проекта
+   * Get the project status
    * @param {string} projectId
-   * @returns {Promise<Object>} - состояние проекта
+   * @returns {Promise<Object>} - project status
    */
   getProjectState: async (projectId) => {
     // TODO: connect to backend API here
@@ -359,10 +358,10 @@ const apiClient = {
   },
 
   /**
-   * Сохранить состояние проекта
+   * Save the project state
    * @param {string} projectId
-   * @param {Object} state - состояние для сохранения
-   * @returns {Promise<Object>} - результат сохранения
+   * @param {Object} state - state to save
+   * @returns {Promise<Object>} - result of saving
    */
   saveProjectState: async (projectId, state) => {
     // TODO: connect to backend API here
@@ -385,9 +384,9 @@ const apiClient = {
   // ==========================================================================
 
   /**
-   * Запустить анализ данных
+   * Run data analysis
    * @param {string} projectId
-   * @returns {Promise<Object>} - результат запуска анализа
+   * @returns {Promise<Object>} - result of running the analysis
    */
   startAnalysis: async (projectId) => {
     // TODO: connect to backend API here
@@ -404,10 +403,10 @@ const apiClient = {
   },
 
   /**
-   * Получить статус анализа
+   * Get analysis status
    * @param {string} projectId
    * @param {string} analysisId
-   * @returns {Promise<Object>} - статус анализа
+   * @returns {Promise<Object>} - analysis status
    */
   getAnalysisStatus: async (projectId, analysisId) => {
     // TODO: connect to backend API here
