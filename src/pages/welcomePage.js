@@ -33,7 +33,7 @@ const WelcomePage = () => {
     "div",
     {
       className:
-        "relative flex flex-col items-center justify-start gap-3lg w-full max-w-[414px] mx-auto px-2xs overflow-hidden pt-4xl",
+        "relative flex flex-col items-center justify-start gap-3lg w-full h-full max-w-[414px] mx-auto px-2xs overflow-hidden pt-4xl",
     },
     [
       // Animated background particles

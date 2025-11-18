@@ -1,5 +1,9 @@
 const React = require("react");
-const { openDB } = require("idb");
+const { apiClient } = require("../components/apiClient.js");
+
+// ============================================================================
+// STATE CONSTANTS (single source of truth for states)
+// ============================================================================
 
 const PROJECT_STATES = {
   UPLOAD: "upload",
@@ -15,8 +19,12 @@ const UPLOAD_STATES = {
   UPLOADING: "uploading",
   SUCCESS: "success",
   PROCESSING: "processing",
-  REPORT_READY: "report_ready",
+  REPORT_READY: "report_ready", // Added to match upload.js definition
 };
+
+// ============================================================================
+// INITIAL STATE
+// ============================================================================
 
 const initialState = {
   projectState: PROJECT_STATES.UPLOAD,
@@ -25,145 +33,282 @@ const initialState = {
   progress: 0,
   processingTimeEstimate: null,
   projectMeta: { name: "", createdAt: "" },
+  hasUploadedFile: false,
+  lastUploadedAt: null,
 };
 
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
 const ProjectContext = React.createContext();
+
+// ============================================================================
+// REDUCER
+// ============================================================================
+
+const projectReducer = (prev, action) => {
+  switch (action.type) {
+    case "SET_STATE":
+      return { ...prev, ...action.payload };
+
+    case "START_UPLOAD":
+      return {
+        ...prev,
+        projectState: PROJECT_STATES.UPLOAD,
+        uploadSubState: UPLOAD_STATES.UPLOADING,
+        currentFile: action.file,
+        progress: 0,
+      };
+
+    case "UPDATE_PROGRESS":
+      return {
+        ...prev,
+        progress: Math.min(action.progress, 100),
+      };
+
+    case "SET_SUCCESS":
+      return {
+        ...prev,
+        uploadSubState: UPLOAD_STATES.SUCCESS,
+        progress: 100,
+      };
+
+    case "COMPLETE_UPLOAD":
+      return {
+        ...prev,
+        uploadSubState: UPLOAD_STATES.IDLE,
+        projectState: PROJECT_STATES.INTERPRETATION,
+        hasUploadedFile: true,
+        lastUploadedAt: new Date().toISOString(),
+        progress: 100,
+      };
+
+    case "CANCEL_UPLOAD":
+      return {
+        ...prev,
+        projectState: PROJECT_STATES.UPLOAD,
+        uploadSubState: UPLOAD_STATES.IDLE,
+        currentFile: null,
+        progress: 0,
+        processingTimeEstimate: null,
+      };
+
+    case "RESET":
+      return {
+        ...initialState,
+        projectMeta: prev.projectMeta,
+      };
+
+    default:
+      return prev;
+  }
+};
+
+// ============================================================================
+// PROVIDER COMPONENT
+// ============================================================================
 
 const ProjectProvider = ({
   children,
   projectId = "default",
   initialMeta = {},
 }) => {
-  // Added initialMeta for the new project
-  const [state, dispatch] = React.useReducer(
-    (prev, action) => {
-      switch (action.type) {
-        case "SET_STATE":
-          return { ...prev, ...action.payload };
-        case "START_UPLOAD":
-          return {
-            ...prev,
-            projectState: PROJECT_STATES.UPLOAD,
-            uploadSubState: UPLOAD_STATES.UPLOADING,
-            currentFile: action.file,
-            progress: 0,
-          };
-        case "UPDATE_PROGRESS":
-          return { ...prev, progress: action.progress };
-        case "SET_SUCCESS":
-          return { ...prev, uploadSubState: UPLOAD_STATES.SUCCESS };
-        case "SET_PROCESSING":
-          return {
-            ...prev,
-            uploadSubState: UPLOAD_STATES.PROCESSING,
-            processingTimeEstimate: "2-3 minutes",
-          };
-        case "SET_REPORT_READY":
-          return {
-            ...prev,
-            uploadSubState: UPLOAD_STATES.REPORT_READY,
-            projectState: PROJECT_STATES.INTERPRETATION,
-          };
-        case "RESET":
-          return initialState;
-        default:
-          return prev;
-      }
-    },
-    { ...initialState, projectMeta: initialMeta }
-  ); // Initial с meta
+  const [state, dispatch] = React.useReducer(projectReducer, {
+    ...initialState,
+    projectMeta: initialMeta,
+  });
 
-  // Loading from Local Storage + IndexedDB
+  const [isLoading, setIsLoading] = React.useState(true);
+  const currentProjectIdRef = React.useRef(projectId);
+
   React.useEffect(() => {
-    const load = async () => {
-      try {
-        const json = localStorage.getItem(`project_data_${projectId}`);
-        if (json) {
-          const saved = JSON.parse(json);
-          dispatch({ type: "SET_STATE", payload: saved });
-        } else {
-          // New project - reset to initial
-          dispatch({ type: "RESET" });
-        }
-
-        const db = await openDB("ProjectDB", 1, {
-          upgrade(db) {
-            if (!db.objectStoreNames.contains("files"))
-              db.createObjectStore("files");
-          },
-        });
-        const file = await db.get("files", `file_${projectId}`);
-        if (file) {
-          dispatch({ type: "SET_STATE", payload: { currentFile: file } });
-        }
-      } catch (err) {
-        console.error("Load error:", err);
-      }
-    };
-    load();
+    currentProjectIdRef.current = projectId;
   }, [projectId]);
 
-  // Autosave
+  // ============================================================================
+  // LOAD PROJECT DATA FROM BACKEND
+  // ============================================================================
+
   React.useEffect(() => {
-    const timer = setTimeout(async () => {
+    let isCancelled = false;
+
+    const loadProjectData = async () => {
+      const loadId = projectId;
+      setIsLoading(true);
+
       try {
-        localStorage.setItem(
-          `project_data_${projectId}`,
-          JSON.stringify(state)
-        );
+        const projectData = await apiClient.getProjectById(loadId);
+        console.log("Project data:", projectData);
 
-        if (state.currentFile) {
-          const db = await openDB("ProjectDB", 1);
-          await db.put("files", state.currentFile, `file_${projectId}`);
+        if (isCancelled || currentProjectIdRef.current !== loadId) return;
+
+        if (!projectData) {
+          // Если данных нет — показываем Upload
+          dispatch({
+            type: "SET_STATE",
+            payload: {
+              projectState: PROJECT_STATES.UPLOAD,
+              uploadSubState: UPLOAD_STATES.IDLE,
+              hasUploadedFile: false,
+              currentFile: null,
+              projectMeta: { name: "", createdAt: "" },
+            },
+          });
+        } else {
+          const hasFile = projectData.hasFile || false;
+
+          const safeFile = projectData.fileName
+            ? {
+                name: projectData.fileName,
+                size: projectData.fileSize || 0,
+              }
+            : null;
+
+          if (hasFile) {
+            dispatch({
+              type: "SET_STATE",
+              payload: {
+                projectState: PROJECT_STATES.INTERPRETATION,
+                uploadSubState: UPLOAD_STATES.IDLE,
+                currentFile: safeFile,
+                hasUploadedFile: true,
+                lastUploadedAt: projectData.uploadedAt || null,
+                projectMeta: {
+                  name: projectData.name || "",
+                  createdAt: projectData.createdAt || "",
+                },
+              },
+            });
+          } else {
+            dispatch({
+              type: "SET_STATE",
+              payload: {
+                projectState: PROJECT_STATES.UPLOAD,
+                uploadSubState: UPLOAD_STATES.IDLE,
+                currentFile: null,
+                hasUploadedFile: false,
+                projectMeta: {
+                  name: projectData.name || "",
+                  createdAt: projectData.createdAt || "",
+                },
+              },
+            });
+          }
         }
-      } catch (err) {
-        console.error("Save error:", err);
+      } catch (error) {
+        console.error("❌ Error loading project data:", error);
+
+        if (!isCancelled && currentProjectIdRef.current === loadId) {
+          dispatch({
+            type: "SET_STATE",
+            payload: {
+              projectState: PROJECT_STATES.UPLOAD,
+              uploadSubState: UPLOAD_STATES.IDLE,
+              currentFile: null,
+              hasUploadedFile: false,
+            },
+          });
+        }
+      } finally {
+        if (!isCancelled && currentProjectIdRef.current === loadId) {
+          setIsLoading(false);
+        }
       }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [state, projectId]);
+    };
 
-  // Simulation
-  React.useEffect(() => {
-    if (state.uploadSubState !== UPLOAD_STATES.UPLOADING) return;
+    loadProjectData();
 
-    const interval = setInterval(() => {
-      const newProgress = Math.min(
-        state.progress + Math.random() * 15 + 5,
-        100
-      );
-      if (newProgress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => dispatch({ type: "SET_SUCCESS" }), 800);
-        setTimeout(() => dispatch({ type: "SET_PROCESSING" }), 2300);
-        setTimeout(() => dispatch({ type: "SET_REPORT_READY" }), 5300);
-      } else {
-        dispatch({ type: "UPDATE_PROGRESS", progress: newProgress });
-      }
-    }, 300);
+    return () => {
+      isCancelled = true;
+    };
+  }, [projectId]);
 
-    return () => clearInterval(interval);
-  }, [state.uploadSubState, state.progress]);
+  // ============================================================================
+  // CONTEXT API METHODS
+  // ============================================================================
 
-  const startUpload = (file) => {
+  const startUpload = async (file) => {
     dispatch({ type: "START_UPLOAD", file });
+
+    try {
+      const result = await apiClient.uploadFile(projectId, file, (progress) => {
+        dispatch({ type: "UPDATE_PROGRESS", progress });
+      });
+
+      dispatch({ type: "SET_SUCCESS" });
+
+      setTimeout(() => {
+        dispatch({ type: "COMPLETE_UPLOAD" });
+      }, 1000);
+
+      return result;
+    } catch (error) {
+      console.error("❌ Upload error:", error);
+      dispatch({ type: "CANCEL_UPLOAD" });
+      throw error;
+    }
   };
 
   const cancelUpload = () => {
-    dispatch({ type: "RESET" });
+    dispatch({ type: "CANCEL_UPLOAD" });
   };
+
+  const resetProject = async () => {
+    try {
+      await apiClient.deleteProjectFile(projectId);
+      dispatch({ type: "RESET" });
+    } catch (error) {
+      console.error("❌ Error resetting project:", error);
+      throw error;
+    }
+  };
+
+  // ============================================================================
+  // CONTEXT VALUE
+  // ============================================================================
 
   const value = {
     state,
     startUpload,
     cancelUpload,
+    resetProject,
     PROJECT_STATES,
     UPLOAD_STATES,
+    isLoading,
   };
 
   return React.createElement(ProjectContext.Provider, { value }, children);
 };
 
-const useProject = () => React.useContext(ProjectContext) || {}; // Fallback
+// ============================================================================
+// HOOK
+// ============================================================================
 
-module.exports = { ProjectProvider, useProject, PROJECT_STATES, UPLOAD_STATES };
+const useProject = () => {
+  const context = React.useContext(ProjectContext);
+
+  if (!context) {
+    console.warn(
+      "⚠️ useProject must be used within ProjectProvider. Returning empty object."
+    );
+    return {
+      state: initialState,
+      startUpload: () => Promise.resolve(),
+      cancelUpload: () => {},
+      resetProject: () => Promise.resolve(),
+      PROJECT_STATES,
+      UPLOAD_STATES,
+      isLoading: false,
+    };
+  }
+
+  return context;
+};
+
+module.exports = {
+  ProjectProvider,
+  useProject,
+  PROJECT_STATES,
+  UPLOAD_STATES,
+};

@@ -7,8 +7,8 @@ const Header = () => {
     "div",
     {
       className:
-        "absolute top-0 left-0 w-full h-14 bg-stat-primary-50 border-b border-stat-primary-100 rounded-t-lg flex items-center gap-3md px-3md drag-region",
-      style: { zIndex: 20 },
+        "header bg-stat-primary-50 border-b border-stat-primary-100 rounded-t-lg flex h-14 items-center self-stretch p-3lg",
+      //style: { zIndex: 20 },
     },
     [
       React.createElement(

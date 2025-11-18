@@ -1,3 +1,4 @@
+// src/components/sidebar.js — ИСПРАВЛЕНО: САЙДБАР ТЕПЕРЬ МЕНЬШЕ (w-64 открытый = 256px, w-16 закрытый = 64px)
 const React = require("react");
 const { MyLastProjectsSection } = require("../projects.js");
 const { QPushButton, MaterialIcon } = require("../button.js");
@@ -39,14 +40,9 @@ const Sidebar = ({ isOpen, onToggle }) => {
   return React.createElement(
     "div",
     {
-      className: `relative top-14 bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 ${
-        isOpen ? "w-[340px] bg-stat-accent-green" : "w-[65px] bg-stat-error-100"
+      className: `sideBar bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 h-full transition-all duration-300 ${
+        isOpen ? "w-64 bg-stat-accent-green" : "w-16 bg-stat-error-100" // ИСПРАВЛЕНО: w-64 (256px) открытый, w-16 (64px) закрытый — стандартный размер, меньше и удобнее
       } left-0`,
-      style: {
-        zIndex: 1000,
-        height: "calc(100vh - 56px)",
-        maxHeight: "calc(100vh - 56px)",
-      },
     },
     [
       React.createElement(
@@ -61,7 +57,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
           React.createElement(MaterialIcon, {
             key: "toggle-icon",
             name: isOpen ? "menu_open" : "menu",
-            className: "text-stat-primary cursor-pointer, text-xxl",
+            className: "text-stat-primary cursor-pointer text-xxl",
           }),
         ]
       ),
@@ -145,32 +141,30 @@ const Sidebar = ({ isOpen, onToggle }) => {
                         key: "button-container",
                         className: "flex justify-center w-full",
                       },
-                      [
-                        React.createElement(
-                          QPushButton,
-                          {
-                            key: "save-button",
-                            style: {
-                              appearance: "none",
-                              WebkitAppearance: "none",
-                            },
-                            onClick: handleCreateProject,
+                      React.createElement(
+                        QPushButton,
+                        {
+                          key: "save-button",
+                          style: {
+                            appearance: "none",
+                            WebkitAppearance: "none",
                           },
-                          [
-                            React.createElement(MaterialIcon, {
-                              key: "check-icon",
-                              name: "check",
-                              size: 20,
-                              className: "text-stat-old-bg",
-                            }),
-                            React.createElement(
-                              "span",
-                              { key: "text", className: "text-base" },
-                              "Save"
-                            ),
-                          ]
-                        ),
-                      ]
+                          onClick: handleCreateProject,
+                        },
+                        [
+                          React.createElement(MaterialIcon, {
+                            key: "check-icon",
+                            name: "check",
+                            size: 20,
+                            className: "text-stat-old-bg",
+                          }),
+                          React.createElement(
+                            "span",
+                            { key: "text", className: "text-base" },
+                            "Save"
+                          ),
+                        ]
+                      )
                     ),
                   ]
                 ),
@@ -186,12 +180,10 @@ const Sidebar = ({ isOpen, onToggle }) => {
                   flexDirection: "column",
                 },
               },
-              [
-                React.createElement(MyLastProjectsSection, {
-                  key: "my-last-projects",
-                  newProject: newProject,
-                }),
-              ]
+              React.createElement(MyLastProjectsSection, {
+                key: "my-last-projects",
+                newProject: newProject,
+              })
             ),
           ]
         : []),

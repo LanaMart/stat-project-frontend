@@ -2,8 +2,12 @@ const React = require("react");
 const { useDialog } = require("./dialog.js");
 const { MaterialIcon } = require("./button.js");
 const { useRouter } = require("../router/router.js");
+const { apiClient } = require("../components/apiClient.js");
 
-// List of projects in expanded state
+// ============================================================================
+// PROJECTS LIST COMPONENT
+// ============================================================================
+
 const ProjectsList = ({
   projects,
   selectedProject,
@@ -23,13 +27,13 @@ const ProjectsList = ({
         {
           key: project.id,
           className: `flex items-center justify-between p-2.5 rounded-sm cursor-pointer ${
-            // don't change this p-variable, it makes the bottom projects visible!!
             selectedProject && selectedProject.id === project.id
               ? "bg-stat-primary-50"
               : "hover:bg-stat-bg"
           }`,
         },
         [
+          // Project content (clickable)
           React.createElement(
             "div",
             {
@@ -43,8 +47,8 @@ const ProjectsList = ({
                 name: "folder",
                 className:
                   selectedProject && selectedProject.id === project.id
-                    ? "text-stat-primary-600 material-icons-outlined "
-                    : "text-stat-primary-400 material-icons-outlined ",
+                    ? "text-stat-primary-600 material-icons-outlined"
+                    : "text-stat-primary-400 material-icons-outlined",
               }),
               React.createElement(
                 "span",
@@ -60,6 +64,8 @@ const ProjectsList = ({
               ),
             ]
           ),
+
+          // Delete button
           React.createElement(MaterialIcon, {
             key: "delete",
             name: "delete",
@@ -79,72 +85,102 @@ const ProjectsList = ({
   );
 };
 
-// Toggle project list show/hide
+// ============================================================================
+// MY PROJECTS SECTION COMPONENT
+// ============================================================================
+
 const MyLastProjectsSection = ({ newProject }) => {
   const [isExpanded, setIsExpanded] = React.useState(true);
   const [selectedProject, setSelectedProject] = React.useState(null);
-  const [projects, setProjects] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("projects_list") || "[]"); // Изменено: список проектов в отдельном ключе
-    } catch (error) {
-      console.error("Error loading projects list from localStorage:", error);
-      return [];
-    }
-  });
+  const [projects, setProjects] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
   const { navigate } = useRouter();
 
-  // Handle new project and auto-expand
+  // ============================================================================
+  // LOAD PROJECTS FROM BACKEND
+  // ============================================================================
+
+  React.useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        // TODO: connect to backend API here
+        // GET /api/projects
+        const projectsList = await apiClient.getProjects();
+        setProjects(projectsList);
+      } catch (error) {
+        console.error("❌ Error loading projects:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  // ============================================================================
+  // HANDLE NEW PROJECT
+  // ============================================================================
+
   React.useEffect(() => {
     if (newProject) {
-      const newId = newProject.id; // make sure the id is generated (e.g., Date.now() in the calling code)
+      // TODO: connect to backend API here
+      // POST /api/projects уже должен был быть вызван до этого момента
+      // Здесь мы просто добавляем проект в локальный state для UI
+
       setProjects((prevProjects) => {
-        const updatedProjects = [
-          newProject,
-          ...prevProjects.filter((p) => p.id !== newId),
-        ];
-        localStorage.setItem("projects_list", JSON.stringify(updatedProjects));
-        return updatedProjects;
+        // Проверяем, не существует ли уже проект с таким ID
+        const exists = prevProjects.some((p) => p.id === newProject.id);
+        if (exists) {
+          return prevProjects;
+        }
+
+        // Добавляем новый проект в начало списка
+        return [newProject, ...prevProjects];
       });
 
-      // For a new project: We save the initialState in Local Storage by ID (isolated)
-      const initialStateForNew = {
-        projectState: "upload",
-        uploadSubState: "idle",
-        currentFile: null,
-        progress: 0,
-        processingTimeEstimate: null,
-        projectMeta: { name: newProject.name, createdAt: newProject.createdAt },
-      };
-      localStorage.setItem(
-        `project_data_${newId}`,
-        JSON.stringify(initialStateForNew)
-      ); // Пустое состояние
-
+      // Выбираем новый проект и открываем список
       setSelectedProject(newProject);
       setIsExpanded(true);
+
+      // Переходим на страницу проекта
       navigate("project-view", { project: newProject });
     }
   }, [newProject, navigate]);
+
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
 
   const handleProjectSelect = (project) => {
     setSelectedProject(project);
     navigate("project-view", { project });
   };
 
-  const handleProjectDelete = (projectToDelete) => {
-    const deletedId = projectToDelete.id;
-    const updatedProjects = projects.filter((p) => p.id !== deletedId);
-    setProjects(updatedProjects);
-    localStorage.setItem("projects_list", JSON.stringify(updatedProjects));
+  const handleProjectDelete = async (projectToDelete) => {
+    try {
+      // TODO: connect to backend API here
+      // DELETE /api/projects/{projectId}
+      await apiClient.deleteProject(projectToDelete.id);
 
-    // Удаляем изолированное состояние проекта
-    localStorage.removeItem(`project_data_${deletedId}`);
+      // Обновляем локальный state
+      setProjects((prevProjects) =>
+        prevProjects.filter((p) => p.id !== projectToDelete.id)
+      );
 
-    if (selectedProject && selectedProject.id === deletedId) {
-      setSelectedProject(null);
-      navigate("welcome");
+      // Если удалённый проект был выбран, сбрасываем выбор
+      if (selectedProject && selectedProject.id === projectToDelete.id) {
+        setSelectedProject(null);
+        navigate("welcome");
+      }
+    } catch (error) {
+      console.error("❌ Error deleting project:", error);
+      // TODO: Показать уведомление об ошибке
     }
   };
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
   return React.createElement(
     "div",
@@ -158,6 +194,7 @@ const MyLastProjectsSection = ({ newProject }) => {
       },
     },
     [
+      // Header (toggle button)
       React.createElement(
         "div",
         {
@@ -182,6 +219,8 @@ const MyLastProjectsSection = ({ newProject }) => {
           }),
         ]
       ),
+
+      // Projects list (when expanded)
       ...(isExpanded
         ? [
             React.createElement(
@@ -196,13 +235,33 @@ const MyLastProjectsSection = ({ newProject }) => {
                 },
               },
               [
-                React.createElement(ProjectsList, {
-                  key: "projects-list",
-                  projects: projects,
-                  selectedProject: selectedProject,
-                  onProjectSelect: handleProjectSelect,
-                  onProjectDelete: handleProjectDelete,
-                }),
+                isLoading
+                  ? React.createElement(
+                      "div",
+                      {
+                        key: "loading",
+                        className:
+                          "text-stat-font-secondary text-sm p-2.5 font-noto",
+                      },
+                      "Loading projects..."
+                    )
+                  : projects.length === 0
+                  ? React.createElement(
+                      "div",
+                      {
+                        key: "empty",
+                        className:
+                          "text-stat-font-secondary text-sm p-2.5 font-noto",
+                      },
+                      "No projects yet"
+                    )
+                  : React.createElement(ProjectsList, {
+                      key: "projects-list",
+                      projects: projects,
+                      selectedProject: selectedProject,
+                      onProjectSelect: handleProjectSelect,
+                      onProjectDelete: handleProjectDelete,
+                    }),
               ]
             ),
           ]
@@ -210,6 +269,10 @@ const MyLastProjectsSection = ({ newProject }) => {
     ]
   );
 };
+
+// ============================================================================
+// REPORT CARD COMPONENT (for future use)
+// ============================================================================
 
 const ReportCard = ({
   projectName,
@@ -226,6 +289,7 @@ const ReportCard = ({
         "bg-stat-white border border-stat-primary-50 rounded-lg p-4 w-full max-w-[552px] flex flex-col gap-xs",
     },
     [
+      // Project tag
       React.createElement(
         "div",
         {
@@ -236,6 +300,8 @@ const ReportCard = ({
         },
         projectName
       ),
+
+      // Main line with report info and actions
       React.createElement(
         "div",
         {
@@ -243,6 +309,7 @@ const ReportCard = ({
           className: "flex items-center justify-between w-full",
         },
         [
+          // Report info (clickable)
           React.createElement(
             "div",
             {
@@ -267,6 +334,8 @@ const ReportCard = ({
               ),
             ]
           ),
+
+          // Actions
           React.createElement(
             "div",
             {
@@ -284,13 +353,15 @@ const ReportCard = ({
                 key: "delete",
                 name: "delete",
                 className:
-                  " material-icons-outlined text-[#5e5c7f] cursor-pointer hover:text-red-500",
+                  "material-icons-outlined text-[#5e5c7f] cursor-pointer hover:text-red-500",
                 onClick: onDelete,
               }),
             ]
           ),
         ]
       ),
+
+      // Description
       React.createElement(
         "div",
         {

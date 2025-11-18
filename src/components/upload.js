@@ -1,14 +1,12 @@
 const React = require("react");
 const { QPushButton, MaterialIcon } = require("./button.js");
-const { useProject } = require("../context/projectContext.js");
+const { useProject, UPLOAD_STATES } = require("../context/projectContext.js"); // Updated import to include UPLOAD_STATES
+const Alert = require("./alert.js");
+const { apiClient } = require("../components/apiClient.js"); // добавляем импорт mock backend
 
-const UPLOAD_STATES = {
-  IDLE: "idle",
-  UPLOADING: "uploading",
-  SUCCESS: "success",
-  PROCESSING: "processing",
-  REPORT_READY: "report_ready",
-};
+// ============================================================================
+// UPLOAD PROGRESS COMPONENT
+// ============================================================================
 
 const UploadProgress = ({
   fileName,
@@ -128,75 +126,56 @@ const UploadProgress = ({
   );
 };
 
-const ProcessingMessage = () => {
-  return React.createElement(
-    "div",
-    {
-      className:
-        "bg-white border border-stat-primary-50 rounded-md p-3lg w-full max-w-[552px]",
-    },
-    [
-      React.createElement(
-        "div",
-        {
-          key: "spinner-section",
-          className: "flex items-center justify-center gap-2.5 mb-2.5 w-full",
-        },
-        React.createElement(
-          "div",
-          {
-            className: "relative w-6 h-6",
-          },
-          React.createElement(MaterialIcon, {
-            key: "spinner",
-            name: "refresh",
-            className: "material-icons-outlined text-stat-primary animate-spin",
-          })
-        )
-      ),
-      React.createElement(
-        "div",
-        {
-          key: "main-message",
-          className:
-            "text-stat-font text-base font-semibold text-center w-full mb-2.5 font-noto",
-        },
-        "Please wait we read your data!"
-      ),
-      React.createElement(
-        "div",
-        {
-          key: "sub-message",
-          className:
-            "text-stat-font-secondary text-sm text-center w-full font-noto",
-        },
-        "It could take a couple of seconds"
-      ),
-    ]
-  );
-};
+// ============================================================================
+// DRAG DROP ZONE COMPONENT
+// ============================================================================
 
 const DragDropZone = ({ disabled }) => {
   const { startUpload } = useProject();
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [isFileDropping, setIsFileDropping] = React.useState(false);
   const [droppedFileInfo, setDroppedFileInfo] = React.useState(null);
+  const [validationErrors, setValidationErrors] = React.useState([]);
   const fileInputRef = React.useRef(null);
+
+  // ============================================================================
+  // Вспомогательная функция: валидация и загрузка
+  // ============================================================================
+
+  const handleFileValidationAndUpload = async (file) => {
+    try {
+      // 1️⃣ Проверяем файл через mock backend
+      await apiClient.validateFile(file);
+
+      // 2️⃣ Если успешно — запускаем загрузку
+      startUpload(file);
+    } catch (error) {
+      console.error("Validation error:", error);
+      // 3️⃣ Показываем alert с ошибками
+      if (error.errors) {
+        setValidationErrors(error.errors);
+      } else if (error.message) {
+        setValidationErrors([error.message]);
+      } else {
+        setValidationErrors(["Unknown validation error"]);
+      }
+    }
+  };
+
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
 
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!disabled) {
-      console.log("Drag enter");
-      setIsDragOver(true);
-    }
+    if (!disabled) setIsDragOver(true);
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!disabled && !e.currentTarget.contains(e.relatedTarget)) {
-      console.log("Drag leave");
       setIsDragOver(false);
     }
   };
@@ -209,62 +188,35 @@ const DragDropZone = ({ disabled }) => {
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Drop event fired, disabled:", disabled);
-    if (disabled) {
-      console.log("Drop ignored: disabled");
-      return;
-    }
+
+    if (disabled) return;
+
     setIsDragOver(false);
 
     const files = Array.from(e.dataTransfer.files);
-    console.log("Dropped files:", files.length, files[0]?.name, files[0]?.type);
+    if (files.length > 0) {
+      const file = files[0];
 
-    const validFiles = files.filter(
-      (file) =>
-        file.type === "text/csv" ||
-        file.type ===
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-        file.type === "application/pdf"
-    );
-
-    console.log("Valid files:", validFiles.length);
-
-    if (validFiles.length > 0) {
-      const file = validFiles[0];
-      console.log("Starting upload for valid file:", file.name);
+      // Показываем анимацию падения файла
       setDroppedFileInfo({ name: file.name, size: file.size });
       setIsFileDropping(true);
 
       setTimeout(() => {
         setIsFileDropping(false);
         setDroppedFileInfo(null);
-        console.log("Calling startUpload from drop");
-        startUpload(file);
+        handleFileValidationAndUpload(file);
       }, 800);
-    } else {
-      console.warn("No valid files dropped");
     }
   };
 
   const handleBrowseClick = () => {
-    console.log("Browse clicked, disabled:", disabled);
     if (!disabled) fileInputRef.current?.click();
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    console.log(
-      "File change event:",
-      file?.name,
-      file?.type,
-      "disabled:",
-      disabled
-    );
     if (file && !disabled) {
-      console.log("Starting upload from browse");
-      startUpload(file);
-    } else {
-      console.log("File change ignored");
+      handleFileValidationAndUpload(file);
     }
   };
 
@@ -275,11 +227,15 @@ const DragDropZone = ({ disabled }) => {
     return `${Math.round(bytes / (1024 * 1024))}MB`;
   };
 
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return React.createElement(
     "div",
     {
       className:
-        "bg-white p-3md rounded-md w-[600px] border border-stat-primary-50",
+        " dragDropZone bg-white p-3md rounded-md w-[600px] border border-stat-primary-50",
     },
     [
       React.createElement(
@@ -291,9 +247,7 @@ const DragDropZone = ({ disabled }) => {
           } border-stat-primary rounded-md p-3lg flex flex-col items-center justify-start gap-3lg w-full relative transition-all duration-200 ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
           }`,
-          style: {
-            backgroundColor: isDragOver ? "#e5e3f7" : "#f1f0fb",
-          },
+          style: { backgroundColor: isDragOver ? "#e5e3f7" : "#f1f0fb" },
           onDragEnter: handleDragEnter,
           onDragLeave: handleDragLeave,
           onDragOver: handleDragOver,
@@ -377,9 +331,22 @@ const DragDropZone = ({ disabled }) => {
             : []),
         ]
       ),
+
+      // Alert для ошибок валидации
+      validationErrors.length > 0 &&
+        React.createElement(Alert, {
+          key: "validation-alert",
+          title: "Oops. Something went wrong!",
+          errors: validationErrors,
+          onClose: () => setValidationErrors([]),
+        }),
     ]
   );
 };
+
+// ============================================================================
+// ANIMATED FILE DROPPING COMPONENT
+// ============================================================================
 
 const AnimatedFileDropping = ({
   fileName = "Unknown file",
@@ -390,9 +357,7 @@ const AnimatedFileDropping = ({
     {
       className:
         "absolute inset-0 flex items-center justify-center pointer-events-none",
-      style: {
-        animation: "fadeIn 0.3s ease-in-out",
-      },
+      style: { animation: "fadeIn 0.3s ease-in-out" },
     },
     React.createElement(
       "div",
@@ -452,7 +417,6 @@ const AnimatedFileDropping = ({
 
 module.exports = {
   DragDropZone,
-  ProcessingMessage,
   UploadProgress,
   UPLOAD_STATES,
   AnimatedFileDropping,
