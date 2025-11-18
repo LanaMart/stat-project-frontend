@@ -225,7 +225,7 @@ const YourDataDashboard = ({
     return React.createElement(
       "div",
       {
-        className: "flex flex-col gap-4xl w-full h-full px-4xl flex-1",
+        className: "flex flex-col gap-4xl w-full h-full px-4xl pb-4xl flex-1",
       },
       React.createElement(TableView, {
         headers: csvData.headers,

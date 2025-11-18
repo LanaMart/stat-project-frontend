@@ -41,9 +41,8 @@ const TableView = ({
   onColumnToggle,
   onTypeChange,
 }) => {
-  // State для выбранных колонок (если не управляется извне)
   const [selectedColumns, setSelectedColumns] = React.useState(
-    initialSelectedColumns || headers
+    initialSelectedColumns ?? [] //чекбоксы по умолчанию НЕ выбраны (пустой массив)
   );
 
   // State для типов колонок
@@ -83,6 +82,9 @@ const TableView = ({
     {
       "className": "flex flex-col gap-3lg w-full",
       "data-component": "TableView",
+      "style": {
+        maxHeight: "100vh",
+      },
     },
     [
       // ====================================================================
@@ -92,7 +94,7 @@ const TableView = ({
         "div",
         {
           key: "intro",
-          className: "flex flex-col gap-2sm w-full",
+          className: "flex flex-col gap-2sm w-full flex-shrink-0",
         },
         [
           // Title
@@ -137,19 +139,27 @@ const TableView = ({
       ),
 
       // ====================================================================
-      // TABLE
+      // TABLE (WITH HORIZONTAL & VERTICAL SCROLL)
       // ====================================================================
       React.createElement(
         "div",
         {
           key: "table-container",
           className:
-            "border border-stat-primary-100 rounded-2sm overflow-hidden",
+            "tableContainer border border-stat-primary-50 rounded-2sm overflow-auto flex-shrink-0",
+          style: {
+            maxWidth: "100%",
+            maxHeight: "50vh",
+          },
         },
         React.createElement(
           "div",
           {
-            className: "flex h-[455px] overflow-auto",
+            className: "flex",
+            style: {
+              minWidth: "fit-content",
+              width: "100%",
+            },
           },
           headers.map((header, colIndex) => {
             const isSelected = selectedColumns.includes(header);
@@ -158,21 +168,21 @@ const TableView = ({
               "div",
               {
                 key: `col-${colIndex}`,
-                className: "flex flex-col h-full shrink-0",
+                className: "flex flex-col flex-1 min-w-[150px]",
               },
               [
-                // ====== CHECKBOX HEADER ======
+                // CHECKBOX HEADER
                 React.createElement(
                   "div",
                   {
                     key: "checkbox-header",
-                    className: `bg-white border-stat-primary-50 ${
+                    className: `bg-white border-stat-primary-50 sticky top-0 z-10 ${
                       colIndex === 0
                         ? "border-t border-l rounded-tl-2sm"
                         : "border-t border-l"
                     } ${
                       colIndex === headers.length - 1 ? "rounded-tr-2sm" : ""
-                    } flex gap-2sm items-center min-w-[120px] max-w-[160px] px-2sm py-1sm`,
+                    } flex gap-2sm items-center px-2sm py-1sm`,
                   },
                   React.createElement(
                     "button",
@@ -182,8 +192,7 @@ const TableView = ({
                       type: "button",
                     },
                     isSelected
-                      ? // Checked checkbox
-                        React.createElement("div", {
+                      ? React.createElement("div", {
                           className:
                             "absolute bg-stat-primary-800 left-[2px] overflow-clip rounded-[3px] size-[20px] top-[2px]",
                           style: {
@@ -192,21 +201,20 @@ const TableView = ({
                             backgroundSize: "cover",
                           },
                         })
-                      : // Unchecked checkbox
-                        React.createElement("div", {
+                      : React.createElement("div", {
                           className:
                             "absolute bg-white border-2 border-stat-primary inset-[8.333%] rounded-[3px]",
                         })
                   )
                 ),
 
-                // ====== COLUMN NAME ======
+                // COLUMN NAME
                 React.createElement(
                   "div",
                   {
                     key: "column-name",
                     className:
-                      "bg-stat-primary-100 border border-stat-primary-50 flex gap-2sm items-center min-w-[120px] max-w-[160px] px-2sm py-2sm",
+                      "bg-stat-primary-100 border border-stat-primary-50 sticky top-[40px] z-10 flex gap-2sm items-center px-2sm py-2sm",
                   },
                   React.createElement(
                     "p",
@@ -218,19 +226,19 @@ const TableView = ({
                   )
                 ),
 
-                // ====== DATA TYPE DROPDOWN ======
+                // TYPE DROPDOWN
                 React.createElement(
                   "div",
                   {
                     key: "type-dropdown",
                     className:
-                      "bg-white border border-stat-primary-50 flex gap-2sm items-center min-w-[120px] max-w-[160px] px-2sm py-2sm",
+                      "bg-white border border-stat-primary-50 sticky top-[84px] z-10 flex gap-2sm items-center px-2sm py-2sm",
                   },
                   React.createElement(
                     "div",
                     {
                       className:
-                        "border border-stat-font-secondary flex flex-col gap-2sm px-xs py-2xs rounded-xs w-[120px]",
+                        "border border-stat-font-secondary flex flex-col gap-2sm px-xs py-2xs rounded-sm w-[120px]",
                     },
                     React.createElement(
                       "select",
@@ -255,13 +263,13 @@ const TableView = ({
                   )
                 ),
 
-                // ====== DATA ROWS ======
+                // DATA ROWS
                 ...displayRows.map((row, rowIndex) =>
                   React.createElement(
                     "div",
                     {
                       key: `row-${rowIndex}`,
-                      className: `bg-white border border-stat-primary-50 flex gap-2sm items-center min-w-[120px] max-w-[160px] px-2sm py-1sm ${
+                      className: `bg-white border border-stat-primary-50 flex gap-2sm items-center px-2sm py-1sm ${
                         rowIndex === displayRows.length - 1 && colIndex === 0
                           ? "rounded-bl-2sm"
                           : ""
@@ -295,7 +303,7 @@ const TableView = ({
         "div",
         {
           key: "buttons",
-          className: "flex items-center justify-between w-full",
+          className: "flex items-center justify-between w-full flex-shrink-0",
         },
         [
           // Back to Dashboard button

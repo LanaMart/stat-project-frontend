@@ -235,7 +235,7 @@ const DragDropZone = ({ disabled }) => {
     "div",
     {
       className:
-        "bg-white p-3md rounded-md w-[600px] border border-stat-primary-50 relative",
+        " dragDropZone bg-white p-3md rounded-md w-[600px] border border-stat-primary-50",
     },
     [
       React.createElement(

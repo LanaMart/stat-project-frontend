@@ -5,7 +5,7 @@ const ContentContainer = ({ children }) => {
   return React.createElement(
     "div",
     {
-      className: "mainContainer flex flex-co w-full h-full",
+      className: "mainContainer flex flex-col w-full h-full",
     },
     children
   );
@@ -15,7 +15,8 @@ const MainContainer = ({ children, isOpen, onToggle }) => {
   return React.createElement(
     "div",
     {
-      className: "flex",
+      className:
+        "appContainer flex items-center selft-stretch flex-1 w-full h-full",
     },
     [
       React.createElement(Sidebar, {

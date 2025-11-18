@@ -14,7 +14,7 @@ const App = () => {
   return React.createElement(
     "div",
     {
-      className: `relative h-screen rounded-lg flex flex-col ${
+      className: `software h-screen rounded-lg flex flex-col items-start ${
         sidebarOpen ? "ml-0" : "ml-0"
       }`,
     },

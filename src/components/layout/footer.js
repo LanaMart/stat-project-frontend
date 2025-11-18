@@ -6,8 +6,8 @@ const Footer = () => {
     "div",
     {
       className:
-        "absolute bottom-0 left-0 w-full h-14 bg-stat-primary-50 border-t border-stat-primary-100 rounded-b-lg flex items-center justify-between px-3md",
-      style: { zIndex: 1001 }, // Higher than sidebar's z-index: 1000
+        "footer bg-stat-primary-50 border-t border-stat-primary-100 rounded-b-lg flex items-center self-stretch justify-between p-3lg",
+      //style: { zIndex: 1001 }, // Higher than sidebar's z-index: 1000
       onClick: (e) => console.log("Footer clicked, target:", e.target), // Debug click
     },
     [

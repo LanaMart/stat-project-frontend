@@ -39,14 +39,9 @@ const Sidebar = ({ isOpen, onToggle }) => {
   return React.createElement(
     "div",
     {
-      className: `sideBar relative top-14 bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 ${
+      className: `sideBar bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 h-full ${
         isOpen ? "w-[340px] bg-stat-accent-green" : "w-[65px] bg-stat-error-100"
       } left-0`,
-      style: {
-        zIndex: 1000,
-        height: "calc(100vh - 56px)",
-        maxHeight: "calc(100vh - 56px)",
-      },
     },
     [
       React.createElement(
