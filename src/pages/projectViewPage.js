@@ -232,7 +232,7 @@ const ProjectViewContent = ({ project }) => {
     "div",
     {
       "className":
-        "projectContent flex flex-col gap-4xl bg-stat-bg self-stretch h-full",
+        "projectContent flex flex-col h-full w-full min-h-0 gap-4xl bg-stat-bg",
       "data-page": "ProjectView",
       "data-project-id": project.id,
     },

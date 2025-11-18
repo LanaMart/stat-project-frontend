@@ -222,26 +222,19 @@ const YourDataDashboard = ({
 
   // Если режим таблицы - показываем TableView
   if (viewMode === "table" && csvData) {
-    return React.createElement(
-      "div",
-      {
-        className: "flex flex-col gap-4xl w-full h-full px-4xl pb-4xl flex-1",
-      },
-      React.createElement(TableView, {
-        headers: csvData.headers,
-        rows: csvData.rows,
-        columnTypes: csvData.columnTypes,
-        onBack: handleBackToDashboard,
-        onNext: handleNextStep,
-      })
-    );
+    return React.createElement(TableView, {
+      headers: csvData.headers,
+      rows: csvData.rows,
+      columnTypes: csvData.columnTypes,
+      onBack: handleBackToDashboard,
+      onNext: handleNextStep,
+    });
   }
-
   // Иначе показываем Dashboard view
   return React.createElement(
     "div",
     {
-      "className": "flex flex-col gap-4xl w-full px-4xl flex-1",
+      "className": "flex flex-col gap-4xl w-full h-full px-4xl min-h-0",
       "data-component": "YourDataDashboard",
     },
     [
@@ -281,7 +274,7 @@ const YourDataDashboard = ({
             {
               key: "add-file-btn",
               className:
-                "flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-50",
+                "flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-font-tertiary",
               onClick: onAddFile,
               type: "button",
             },

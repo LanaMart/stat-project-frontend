@@ -1,3 +1,4 @@
+// src/components/tableView.js — ИСПРАВЛЕНИЕ: горизонтальная прокрутка полная, правая кнопка всегда видна (дизайн сохранён)
 const React = require("react");
 const { MaterialIcon } = require("../components/button.js");
 
@@ -80,11 +81,9 @@ const TableView = ({
   return React.createElement(
     "div",
     {
-      "className": "flex flex-col gap-3lg w-full",
+      "className":
+        "flex flex-col gap-3lg w-full h-full px-4xl pb-3xl overflow-hidden", // h-full + overflow-hidden для полного экрана
       "data-component": "TableView",
-      "style": {
-        maxHeight: "100vh",
-      },
     },
     [
       // ====================================================================
@@ -146,10 +145,9 @@ const TableView = ({
         {
           key: "table-container",
           className:
-            "tableContainer border border-stat-primary-50 rounded-2sm overflow-auto flex-shrink-0",
+            "tableContainer border border-stat-primary-50 rounded-2sm overflow-auto flex-1 custom-scrollbar", // flex-1 + custom-scrollbar
           style: {
             maxWidth: "100%",
-            maxHeight: "50vh",
           },
         },
         React.createElement(
@@ -312,7 +310,7 @@ const TableView = ({
             {
               key: "back-btn",
               className:
-                "flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-bg transition-colors",
+                "flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-font-tertiary transition-colors",
               onClick: onBack,
               type: "button",
             },
@@ -355,6 +353,29 @@ const TableView = ({
           ),
         ]
       ),
+      React.createElement("style", {
+        key: "thin-scrollbar",
+        children: `
+          .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.25) transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.25);
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.45);
+          }
+        `,
+      }),
     ]
   );
 };
