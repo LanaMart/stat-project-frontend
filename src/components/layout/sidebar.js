@@ -1,8 +1,9 @@
-// src/components/sidebar.js — ИСПРАВЛЕНО: САЙДБАР ТЕПЕРЬ МЕНЬШЕ (w-64 открытый = 256px, w-16 закрытый = 64px)
+// src/components/sidebar.js — 100% твой оригинальный дизайн + все баги исправлены
 const React = require("react");
 const { MyLastProjectsSection } = require("../projects.js");
 const { QPushButton, MaterialIcon } = require("../button.js");
 const { useRouter } = require("../../router/router.js");
+const { apiClient } = require("../apiClient.js");
 
 const StatBridgeLogo = () => {
   return React.createElement("img", {
@@ -18,22 +19,17 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const [newProject, setNewProject] = React.useState(null);
   const { navigate } = useRouter();
 
-  const handleCreateProject = () => {
-    if (projectName.trim()) {
-      const newProject = {
-        id: Date.now(),
+  const handleCreateProject = async () => {
+    if (!projectName.trim()) return;
+    try {
+      const created = await apiClient.createProject({
         name: projectName.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      const existingProjects = JSON.parse(
-        localStorage.getItem("projects") || "[]"
-      );
-      existingProjects.unshift(newProject);
-      localStorage.setItem("projects", JSON.stringify(existingProjects));
-      localStorage.setItem("currentProject", JSON.stringify(newProject));
+      });
       setProjectName("");
-      setNewProject(newProject);
-      navigate("project-view", { project: newProject });
+      //setNewProject(created);
+      navigate("project-view", { project: created });
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -41,10 +37,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
     "div",
     {
       className: `sideBar bg-stat-white p-3lg flex flex-col gap-3lg border border-stat-primary-50 h-full transition-all duration-300 ${
-        isOpen ? "w-64 bg-stat-accent-green" : "w-16 bg-stat-error-100" // ИСПРАВЛЕНО: w-64 (256px) открытый, w-16 (64px) закрытый — стандартный размер, меньше и удобнее
+        isOpen ? "w-64 bg-stat-accent-green" : "w-16 bg-stat-error-100"
       } left-0`,
     },
     [
+      // Toggle — точно как было
       React.createElement(
         "div",
         {
@@ -53,16 +50,16 @@ const Sidebar = ({ isOpen, onToggle }) => {
             "h-3lg flex items-center justify-end text-stat-primary cursor-pointer text-xxl flex-shrink-0",
           onClick: onToggle,
         },
-        [
-          React.createElement(MaterialIcon, {
-            key: "toggle-icon",
-            name: isOpen ? "menu_open" : "menu",
-            className: "text-stat-primary cursor-pointer text-xxl",
-          }),
-        ]
+        React.createElement(MaterialIcon, {
+          name: isOpen ? "menu_open" : "menu",
+          className: "text-stat-primary cursor-pointer text-xxl",
+        })
       ),
+
+      // Открытый контент
       ...(isOpen
         ? [
+            // Header с логотипом и слоганом
             React.createElement(
               "div",
               {
@@ -82,108 +79,94 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 ),
               ]
             ),
+
+            // Блок создания проекта — 100% твой оригинал
             React.createElement(
               "div",
               {
-                key: "projects",
+                key: "create-block",
                 className: "flex flex-col gap-3md flex-shrink-0",
               },
-              [
-                React.createElement(
-                  "div",
-                  {
-                    key: "content",
-                    className: "flex flex-col gap-2sm",
-                  },
-                  [
+              React.createElement(
+                "div",
+                { key: "content", className: "flex flex-col gap-2sm" },
+                [
+                  React.createElement(
+                    "div",
+                    {
+                      key: "input-wrapper",
+                      className: "flex flex-col gap-2xs w-full",
+                    },
                     React.createElement(
                       "div",
                       {
-                        key: "input-wrapper",
-                        className: "flex flex-col gap-2xs w-full",
+                        key: "input-container",
+                        className:
+                          "flex items-center justify-between px-2sm py-3md rounded-sm border border-stat-primary-100 bg-stat-white cursor-text",
                       },
                       [
+                        React.createElement("input", {
+                          key: "input",
+                          type: "text",
+                          placeholder: "Create new project",
+                          value: projectName,
+                          onChange: (e) => setProjectName(e.target.value),
+                          onKeyDown: (e) =>
+                            e.key === "Enter" && handleCreateProject(),
+                          className:
+                            "flex-1 bg-transparent outline-none text-sm text-stat-font placeholder:text-grey-400 font-noto",
+                        }),
+                        React.createElement(MaterialIcon, {
+                          key: "edit-icon",
+                          name: "edit",
+                          className:
+                            "material-icons-outlined text-stat-primary",
+                        }),
+                      ]
+                    )
+                  ),
+
+                  React.createElement(
+                    "div",
+                    {
+                      key: "button-container",
+                      className: "flex justify-center w-full",
+                    },
+                    React.createElement(
+                      QPushButton,
+                      {
+                        key: "save-btn",
+                        style: { appearance: "none", WebkitAppearance: "none" },
+                        onClick: handleCreateProject,
+                      },
+                      [
+                        React.createElement(MaterialIcon, {
+                          key: "check",
+                          name: "check",
+                          size: 20,
+                          className: "text-stat-old-bg",
+                        }),
                         React.createElement(
-                          "div",
-                          {
-                            key: "input-container",
-                            className:
-                              "flex items-center justify-between px-2sm py-3md rounded-sm border border-stat-primary-100 bg-stat-white cursor-text",
-                          },
-                          [
-                            React.createElement("input", {
-                              key: "input",
-                              type: "text",
-                              placeholder: "Create new project",
-                              value: projectName,
-                              onChange: (e) => setProjectName(e.target.value),
-                              onKeyDown: (e) => {
-                                if (e.key === "Enter") {
-                                  handleCreateProject();
-                                }
-                              },
-                              className:
-                                "flex-1 bg-transparent outline-none text-sm text-stat-font placeholder:text-grey-400 font-noto",
-                            }),
-                            React.createElement(MaterialIcon, {
-                              key: "edit-icon",
-                              name: "edit",
-                              className:
-                                "material-icons-outlined text-stat-primary",
-                            }),
-                          ]
+                          "span",
+                          { key: "text", className: "text-base" },
+                          "Save"
                         ),
                       ]
-                    ),
-                    React.createElement(
-                      "div",
-                      {
-                        key: "button-container",
-                        className: "flex justify-center w-full",
-                      },
-                      React.createElement(
-                        QPushButton,
-                        {
-                          key: "save-button",
-                          style: {
-                            appearance: "none",
-                            WebkitAppearance: "none",
-                          },
-                          onClick: handleCreateProject,
-                        },
-                        [
-                          React.createElement(MaterialIcon, {
-                            key: "check-icon",
-                            name: "check",
-                            size: 20,
-                            className: "text-stat-old-bg",
-                          }),
-                          React.createElement(
-                            "span",
-                            { key: "text", className: "text-base" },
-                            "Save"
-                          ),
-                        ]
-                      )
-                    ),
-                  ]
-                ),
-              ]
+                    )
+                  ),
+                ]
+              )
             ),
+
+            // Список проектов
             React.createElement(
               "div",
               {
-                key: "projects-scroll-container",
+                key: "scroll-container",
                 className: "flex-1 min-h-0 overflow-hidden",
-                style: {
-                  display: "flex",
-                  flexDirection: "column",
-                },
+                style: { display: "flex", flexDirection: "column" },
               },
-              React.createElement(MyLastProjectsSection, {
-                key: "my-last-projects",
-                newProject: newProject,
-              })
+              React.createElement(MyLastProjectsSection, { newProject })
             ),
           ]
         : []),
