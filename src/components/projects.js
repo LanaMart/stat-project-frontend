@@ -1,4 +1,3 @@
-// src/components/projects.js — ФИНАЛЬНАЯ ВЕРСИЯ (Ноябрь 2025)
 const React = require("react");
 const { useDialog } = require("./dialog.js");
 const { MaterialIcon } = require("./button.js");
@@ -6,7 +5,7 @@ const { useRouter } = require("../router/router.js");
 const { apiClient } = require("./apiClient.js");
 
 // ============================================================================
-// ProjectsList — твой оригинальный дизайн
+// ProjectsList
 // ============================================================================
 const ProjectsList = ({
   projects,
@@ -81,7 +80,7 @@ const ProjectsList = ({
 };
 
 // ============================================================================
-// MyLastProjectsSection — новый проект появляется мгновенно!
+// MyLastProjectsSection
 // ============================================================================
 const MyLastProjectsSection = () => {
   const [isExpanded, setIsExpanded] = React.useState(true);
@@ -90,7 +89,7 @@ const MyLastProjectsSection = () => {
 
   const { navigate, currentProject } = useRouter();
 
-  // Обновляем список каждый раз, когда меняется mockStorage (через polling — просто и надёжно)
+  // We update the list every time mockStorage changes (via polling – simple and reliable)
   React.useEffect(() => {
     const load = async () => {
       const list = await apiClient.getProjects();
@@ -99,7 +98,7 @@ const MyLastProjectsSection = () => {
     };
     load();
 
-    const interval = setInterval(load, 800); // проверяем каждые 0.8 сек — мгновенно для пользователя
+    const interval = setInterval(load, 800); //check every 0.8 sec - instant for the user
     return () => clearInterval(interval);
   }, []);
 
@@ -153,7 +152,7 @@ const MyLastProjectsSection = () => {
         ]
       ),
 
-      // Список
+      // Project list
       isExpanded &&
         React.createElement(
           "div",

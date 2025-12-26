@@ -1,8 +1,3 @@
-/**
- * apiClient.js - Финальная версия (Ноябрь 2025)
- * Всё работает: файлы, проекты, персистентность, без ошибок
- */
-
 const STORAGE_KEY = "statbridge_mock_data_v3";
 
 let mockStorage = {
@@ -11,7 +6,7 @@ let mockStorage = {
   projectStates: {},
 };
 
-// Загрузка + очистка битых файлов
+// upload + clean the files
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -57,7 +52,7 @@ const simulateNetworkDelay = (ms = 200) =>
   new Promise((r) => setTimeout(r, ms));
 
 // ============================================================================
-// API CLIENT — ВЕРНУЛ getProjectById !
+// API CLIENT
 // ============================================================================
 
 const apiClient = {
@@ -83,7 +78,6 @@ const apiClient = {
     return newProject;
   },
 
-  // ←←←← ВЕРНУЛСЯ! Без него projectContext падает
   getProjectById: async (projectId) => {
     await simulateNetworkDelay();
     const project = mockStorage.projects.find((p) => p.id === projectId);

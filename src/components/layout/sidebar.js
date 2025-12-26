@@ -1,4 +1,3 @@
-// src/components/sidebar.js — 100% твой оригинальный дизайн + все баги исправлены
 const React = require("react");
 const { MyLastProjectsSection } = require("../projects.js");
 const { QPushButton, MaterialIcon } = require("../button.js");
@@ -8,7 +7,7 @@ const { apiClient } = require("../apiClient.js");
 const StatBridgeLogo = () => {
   return React.createElement("img", {
     src: "../assets/images/logo.png",
-    alt: "StatBridge Logo",
+    alt: "StatSynergy Logo",
     className: "w-[55%] mx-auto object-contain rounded-lg",
     key: "logo-img",
   });
@@ -41,7 +40,6 @@ const Sidebar = ({ isOpen, onToggle }) => {
       } left-0`,
     },
     [
-      // Toggle — точно как было
       React.createElement(
         "div",
         {
@@ -56,10 +54,9 @@ const Sidebar = ({ isOpen, onToggle }) => {
         })
       ),
 
-      // Открытый контент
       ...(isOpen
         ? [
-            // Header с логотипом и слоганом
+            // Header with logo and slogan
             React.createElement(
               "div",
               {
@@ -73,7 +70,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                   {
                     key: "tagline",
                     className:
-                      "text-stat-font-secondary text-lg font-semibold leading-6 text-center w-4/5 mx-auto font-noto",
+                      "text-stat-font-secondary text-base font-semibold leading-6 text-center w-4/5 mx-auto font-noto",
                   },
                   "Where Business meets Data"
                 ),

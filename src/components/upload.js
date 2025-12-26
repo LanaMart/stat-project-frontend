@@ -2,7 +2,7 @@ const React = require("react");
 const { QPushButton, MaterialIcon } = require("./button.js");
 const { useProject, UPLOAD_STATES } = require("../context/projectContext.js"); // Updated import to include UPLOAD_STATES
 const Alert = require("./alert.js");
-const { apiClient } = require("../components/apiClient.js"); // добавляем импорт mock backend
+const { apiClient } = require("../components/apiClient.js"); //Add the mock backend import
 
 // ============================================================================
 // UPLOAD PROGRESS COMPONENT
@@ -139,19 +139,19 @@ const DragDropZone = ({ disabled }) => {
   const fileInputRef = React.useRef(null);
 
   // ============================================================================
-  // Вспомогательная функция: валидация и загрузка
+  // Helper function: validation and loading
   // ============================================================================
 
   const handleFileValidationAndUpload = async (file) => {
     try {
-      // 1️⃣ Проверяем файл через mock backend
+      // Test the file through a mock backend
       await apiClient.validateFile(file);
 
-      // 2️⃣ Если успешно — запускаем загрузку
+      // If successful - start the upload.
       startUpload(file);
     } catch (error) {
       console.error("Validation error:", error);
-      // 3️⃣ Показываем alert с ошибками
+      // Show alert with error
       if (error.errors) {
         setValidationErrors(error.errors);
       } else if (error.message) {
@@ -197,7 +197,7 @@ const DragDropZone = ({ disabled }) => {
     if (files.length > 0) {
       const file = files[0];
 
-      // Показываем анимацию падения файла
+      // animation of dropping file
       setDroppedFileInfo({ name: file.name, size: file.size });
       setIsFileDropping(true);
 
