@@ -182,7 +182,7 @@ const validateParsedData = (parsedData) => {
   }
 
   if (!parsedData.rows || parsedData.rows.length === 0) {
-    errors.push("No data rows found in CSV");
+    errors.push("No data found in CSV");
   }
 
   if (parsedData.totalColumns > 100) {

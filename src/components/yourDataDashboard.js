@@ -7,19 +7,19 @@ const Alert = require("../components/alert.js"); // Импорт Alert комп�
 const { useProject } = require("../context/projectContext.js"); // Импорт useProject
 
 /**
- * YourDataDashboard - dashboard component с возможностью просмотра данных
+ * YourDataDashboard - a dashboard component with data viewing capabilities
  *
- * Поддерживает два режима:
- * 1. Dashboard view - отображение информации о загруженном файле
- * 2. Table view - отображение интерпретированных CSV данных в таблице
+ * Supports two modes:
+ * 1. Dashboard view - displays information about the uploaded file
+ * 2. Table view - displays interpreted CSV data in a table
  *
  * @param {Object} props
- * @param {string} props.projectId - ID текущего проекта
- * @param {string} props.projectName - название проекта
- * @param {string} props.fileName - имя загруженного файла
- * @param {Function} [props.onAddFile] - callback для добавления нового файла
- * @param {Function} [props.onDownloadFile] - callback для скачивания файла
- * @param {Function} [props.onDeleteFile] - callback для удаления файла
+ * @param {string} props.projectId
+ * @param {string} props.projectName
+ * @param {string} props.fileName
+ * @param {Function} [props.onAddFile] - callback for adding a new file
+ * @param {Function} [props.onDownloadFile] - callback for file download
+ * @param {Function} [props.onDeleteFile] - callback for delete the file
  *
  * @example
  * <YourDataDashboard
@@ -41,23 +41,23 @@ const YourDataDashboard = ({
   // STATE
   // ============================================================================
 
-  // Режим отображения: 'dashboard' или 'table'
+  // Display mode: 'dashboard' or 'table'
   const [viewMode, setViewMode] = React.useState("dashboard");
 
-  // Данные CSV после парсинга
+  // CSV data after parsing
   const [csvData, setCsvData] = React.useState(null);
 
-  // Состояние загрузки/парсинга
+  // Loading/parsing state
   const [isLoading, setIsLoading] = React.useState(false);
 
-  // Ошибки парсинга
+  // Parsing errors
   const [parseError, setParseError] = React.useState(null);
 
-  // Состояние для Alert
+  // Status for Alert
   const [alertVisible, setAlertVisible] = React.useState(false);
   const [alertProps, setAlertProps] = React.useState({ title: "", errors: [] });
 
-  // Получаем состояние из контекста
+  // Status for Alert
   const { state } = useProject();
 
   // ============================================================================
@@ -65,14 +65,14 @@ const YourDataDashboard = ({
   // ============================================================================
 
   /**
-   * Интерпретирует CSV файл и переключается в режим таблицы
+   * Interprets a CSV file and switches to table mode.
    */
   const interpretCSV = async () => {
     try {
       setIsLoading(true);
       setParseError(null);
 
-      // Добавленная проверка: файл загружен?
+      // Added check: File uploaded?
       const project = await apiClient.getProjectById(projectId);
       if (!project) {
         throw new Error("Project not found");
@@ -81,20 +81,20 @@ const YourDataDashboard = ({
         throw new Error("No file uploaded for this project");
       }
 
-      // Получаем файл из backend
+      // Getting a file from the backend
       const fileBlob = await apiClient.downloadProjectFile(projectId);
 
-      // Парсим CSV
+      // CSV parcing
       const parsedData = await parseCSV(fileBlob);
 
-      // Валидируем данные
+      // data validation
       const validation = validateParsedData(parsedData);
 
       if (!validation.valid) {
         throw new Error(validation.errors.join(", "));
       }
 
-      // Сохраняем данные и переключаемся в режим таблицы
+      // Save the data and switch to table mode.
       setCsvData(parsedData);
       setViewMode("table");
 
@@ -106,10 +106,13 @@ const YourDataDashboard = ({
       console.error("❌ CSV interpretation error:", error);
       setParseError(error.message);
 
-      // Показываем Alert вместо обычного alert
+      // show the custom alter
       setAlertProps({
         title: "Failed to interpret CSV",
-        errors: [error.message],
+        errors: [
+          error.message ||
+            "File lost after restart in mock-backend — please re-upload",
+        ],
       });
       setAlertVisible(true);
     } finally {
@@ -122,7 +125,7 @@ const YourDataDashboard = ({
   // ============================================================================
 
   /**
-   * Обработчик для кнопки "Start data analyze"
+   * Handler for the "Start data analyze" button
    */
   const handleStartAnalyze = () => {
     console.log("🔍 Starting CSV interpretation...");
@@ -130,7 +133,7 @@ const YourDataDashboard = ({
   };
 
   /**
-   * Обработчик для кнопки "View file"
+   * Handler for the "View file" button
    */
   const handleViewFile = () => {
     console.log("👁️ Viewing file...");
@@ -138,7 +141,7 @@ const YourDataDashboard = ({
   };
 
   /**
-   * Обработчик для кнопки "Back to dashboard"
+   * Handler for the "Back to dashboard" button
    */
   const handleBackToDashboard = () => {
     setViewMode("dashboard");
@@ -147,12 +150,12 @@ const YourDataDashboard = ({
   };
 
   /**
-   * Обработчик для кнопки "Next step"
+   * Handler for the "Next step" button
    */
   const handleNextStep = () => {
     console.log("➡️ Moving to next step with selected data:", csvData);
     // TODO: Implement next step logic (e.g., navigate to validation/wizard)
-    // Показываем Alert вместо обычного alert
+    // show custom alert
     setAlertProps({
       title: "Next Step",
       errors: ["Functionality will be implemented in the next phase"],
@@ -161,7 +164,7 @@ const YourDataDashboard = ({
   };
 
   /**
-   * Обработчик скачивания файла
+   * download handler
    */
   const handleDownload = async () => {
     if (onDownloadFile) {
@@ -194,7 +197,7 @@ const YourDataDashboard = ({
   // RENDER
   // ============================================================================
 
-  // Если загружается - показываем индикатор
+  // If it loads, we show an indicator.
   if (isLoading) {
     return React.createElement(
       "div",
@@ -220,7 +223,7 @@ const YourDataDashboard = ({
     );
   }
 
-  // Если режим таблицы - показываем TableView
+  // If the table mode is selected, show TableView.
   if (viewMode === "table" && csvData) {
     return React.createElement(TableView, {
       headers: csvData.headers,
@@ -230,7 +233,7 @@ const YourDataDashboard = ({
       onNext: handleNextStep,
     });
   }
-  // Иначе показываем Dashboard view
+  // Otherwise, show the Dashboard view
   return React.createElement(
     "div",
     {
@@ -238,7 +241,7 @@ const YourDataDashboard = ({
       "data-component": "YourDataDashboard",
     },
     [
-      // Alert компонент, если visible
+      // Alert component visible
       alertVisible &&
         React.createElement(Alert, {
           key: "custom-alert",
@@ -520,7 +523,7 @@ const YourDataDashboard = ({
         ]
       ),
 
-      // Ошибки парсинга (если есть)
+      // Parsing errors
       parseError &&
         React.createElement(
           "div",

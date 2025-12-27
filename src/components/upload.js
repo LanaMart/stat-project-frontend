@@ -332,7 +332,7 @@ const DragDropZone = ({ disabled }) => {
         ]
       ),
 
-      // Alert для ошибок валидации
+      // Alert for validation error
       validationErrors.length > 0 &&
         React.createElement(Alert, {
           key: "validation-alert",

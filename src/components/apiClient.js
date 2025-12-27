@@ -1,4 +1,4 @@
-const STORAGE_KEY = "statbridge_mock_data_v3";
+const STORAGE_KEY = "statSynergy_mock_data_v3";
 
 let mockStorage = {
   projects: [],
@@ -6,7 +6,7 @@ let mockStorage = {
   projectStates: {},
 };
 
-// upload + clean the files
+// Load persisted data from localStorage
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -15,6 +15,7 @@ try {
     mockStorage.projectStates = parsed.projectStates || {};
     mockStorage.projectFiles = {};
 
+    // Restore only valid file entries (arrayBuffer + metadata)
     if (parsed.projectFiles) {
       Object.keys(parsed.projectFiles).forEach((id) => {
         const entry = parsed.projectFiles[id];
@@ -23,21 +24,15 @@ try {
         }
       });
     }
-  } else {
-    const welcome = {
-      id: "welcome_project_001",
-      name: "My First Project",
-      createdAt: new Date().toISOString(),
-    };
-    mockStorage.projects.push(welcome);
-    mockStorage.projectStates[welcome.id] = {
-      projectState: "upload",
-      uploadSubState: "idle",
-      hasUploadedFile: false,
-    };
   }
 } catch (e) {
-  console.warn("Failed to load mock data", e);
+  console.warn("Failed to load mock data – starting with empty state", e);
+  // In case of corrupted data, reset to clean empty state
+  mockStorage = {
+    projects: [],
+    projectFiles: {},
+    projectStates: {},
+  };
 }
 
 const persist = () => {
@@ -58,7 +53,7 @@ const simulateNetworkDelay = (ms = 200) =>
 const apiClient = {
   getProjects: async () => {
     await simulateNetworkDelay();
-    return [...mockStorage.projects];
+    return [...mockStorage.projects]; // May return empty array → UI shows "No projects yet"
   },
 
   createProject: async (projectData) => {
@@ -68,7 +63,7 @@ const apiClient = {
       name: projectData.name?.trim() || "Untitled Project",
       createdAt: new Date().toISOString(),
     };
-    mockStorage.projects.unshift(newProject);
+    mockStorage.projects.unshift(newProject); // Newest projects first
     mockStorage.projectStates[newProject.id] = {
       projectState: "upload",
       uploadSubState: "idle",
@@ -174,7 +169,14 @@ const apiClient = {
   downloadProjectFile: async (projectId) => {
     await simulateNetworkDelay();
     const data = mockStorage.projectFiles[projectId];
-    if (!data) throw new Error("File not found");
+    if (data && data.metadata && !data.arrayBuffer) {
+      throw new Error(
+        "File lost after restart in mock-backend — please re-upload"
+      );
+    }
+    if (!data || !data.arrayBuffer) {
+      throw new Error("File not found");
+    }
     const blob = new Blob([data.arrayBuffer], { type: data.metadata.type });
     return new File([blob], data.metadata.name, { type: data.metadata.type });
   },
