@@ -12,18 +12,14 @@ const { YourDataDashboard } = require("../components/yourDataDashboard.js");
 const { apiClient } = require("../components/apiClient.js");
 
 /**
- * ProjectViewPage - главная страница проекта
- *
- * Упрощённая версия без localStorage:
- * - Все данные загружаются через API
- * - Управление только UI-состояниями
- * - Автоматический переход между DragDropZone и Dashboard
+ * ProjectViewPage - Project Main Page
+ * - Automatic transition between DragDropZone and Dashboard
  *
  * Flow:
- * 1. Новый проект / проект без файла → DragDropZone
- * 2. Загрузка файла → UploadProgress поверх DragDropZone
- * 3. Файл загружен → автоматический переход к Dashboard
- * 4. Проект с файлом → сразу Dashboard
+ * 1. New project / project without a file → DragDropZone
+ * 2. File upload → UploadProgress over DragDropZone
+ * 3. File uploaded → automatic transition to Dashboard
+ * 4. Project with file → directly to Dashboard
  */
 const ProjectViewPage = ({ project }) => {
   const { navigate } = useRouter();
@@ -55,7 +51,7 @@ const ProjectViewPage = ({ project }) => {
   return React.createElement(
     ProjectProvider,
     {
-      key: project.id, // Key для полного remount при смене проекта
+      key: project.id, // Key for full remount when changing projects
       projectId: project.id,
       initialMeta: { name: project.name, createdAt: project.createdAt },
     },
@@ -64,7 +60,7 @@ const ProjectViewPage = ({ project }) => {
 };
 
 /**
- * ProjectViewContent - контент страницы проекта (внутри Provider)
+ * ProjectViewContent - page content (внутри Provider)
  */
 const ProjectViewContent = ({ project }) => {
   const { state, cancelUpload, resetProject } = useProject();
@@ -74,17 +70,17 @@ const ProjectViewContent = ({ project }) => {
   // STATE CHECKS
   // ============================================================================
 
-  // Проверяем, загружен ли файл в проект
+  // Checking if the file is loaded into the project
   const hasUploadedFile =
     state.projectState === PROJECT_STATES.INTERPRETATION ||
     state.projectState === PROJECT_STATES.VALIDATION ||
     state.projectState === PROJECT_STATES.WIZARD ||
     state.projectState === PROJECT_STATES.VISUALIZATION;
 
-  // Показываем DragDropZone в состоянии UPLOAD
+  // Show DragDropZone in UPLOAD state
   const showDragDropZone = state.projectState === PROJECT_STATES.UPLOAD;
 
-  // Показываем прогресс загрузки поверх DragDropZone
+  // Showing download progress over DragDropZone
   const showUploadProgress =
     state.projectState === PROJECT_STATES.UPLOAD &&
     (state.uploadSubState === UPLOAD_STATES.UPLOADING ||
@@ -97,8 +93,8 @@ const ProjectViewContent = ({ project }) => {
   const handleAddFile = () => {
     console.log("Add another file");
     // TODO: connect to backend API here
-    // Логика добавления дополнительного файла
-    // Пока просто возвращаемся к upload состоянию
+    // Logic for adding an additional file
+    // For now, we'll just return to the upload state
     resetProject();
   };
 
@@ -106,7 +102,7 @@ const ProjectViewContent = ({ project }) => {
     console.log("View file:", state.currentFile?.name);
     // TODO: connect to backend API here
     // GET /api/projects/{projectId}/files/preview
-    // Открыть файл в новом окне или модальном окне
+    // Open the file in a new window or modal window
   };
 
   const handleDownloadFile = async () => {
@@ -115,7 +111,7 @@ const ProjectViewContent = ({ project }) => {
       // TODO: connect to backend API here
       const blob = await apiClient.downloadProjectFile(project.id);
 
-      // Создаём ссылку для скачивания
+      // Create a download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -126,21 +122,21 @@ const ProjectViewContent = ({ project }) => {
       document.body.removeChild(a);
     } catch (error) {
       console.error("❌ Download error:", error);
-      // TODO: Показать уведомление об ошибке
+      // TODO: Show error notificationе
     }
   };
 
   const handleDeleteFile = async () => {
     console.log("Delete file:", state.currentFile?.name);
     // TODO: connect to backend API here
-    // Показать диалог подтверждения, затем:
+    // Show confirmation dialog, then:
     // DELETE /api/projects/{projectId}/files/{fileId}
 
     try {
       await resetProject();
     } catch (error) {
       console.error("❌ Delete error:", error);
-      // TODO: Показать уведомление об ошибке
+      // TODO: Show error notification
     }
   };
 
@@ -153,11 +149,11 @@ const ProjectViewContent = ({ project }) => {
 
       console.log("Analysis started:", result);
 
-      // TODO: Переход к странице анализа или показ прогресса
+      //TODO: Go to the analysis page or show progress
       // navigate(`/projects/${project.id}/analyze`);
     } catch (error) {
       console.error("❌ Analysis error:", error);
-      // TODO: Показать уведомление об ошибке
+      // TODO: Show error message
     }
   };
 
@@ -168,29 +164,29 @@ const ProjectViewContent = ({ project }) => {
   let mainContent = null;
 
   if (showDragDropZone) {
-    // Показываем DragDropZone с опциональным UploadProgress
+    // Showing DragDropZone with UploadProgress
     mainContent = React.createElement(
       "div",
       {
         key: "drag-drop-container",
         className:
-          "contentContainer flex flex-col items-center flex-1 self-stretch relative",
+          "contentContainer gap-3lg flex flex-col items-center flex-1 self-stretch relative",
       },
       [
-        // DragDropZone всегда видна в процессе UPLOAD
+        // DragDropZone is always visible during the UPLOAD process
         React.createElement(DragDropZone, {
           key: "drag-drop",
           disabled: state.uploadSubState !== UPLOAD_STATES.IDLE,
         }),
 
-        // UploadProgress показывается поверх DragDropZone
+        // UploadProgress is shown on top of DragDropZone
         showUploadProgress &&
           React.createElement(
             "div",
             {
               key: "progress-overlay",
               className:
-                "absolute inset-0 flex items-center justify-center pointer-events-none",
+                "inset-0 flex items-center justify-center pointer-events-none",
             },
             React.createElement(
               "div",
@@ -210,7 +206,7 @@ const ProjectViewContent = ({ project }) => {
       ].filter(Boolean)
     );
   } else if (hasUploadedFile) {
-    // Показываем Dashboard с данными
+    // Showing the Dashboard with data
     mainContent = React.createElement(YourDataDashboard, {
       key: "data-dashboard",
       projectId: project.id,

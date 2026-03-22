@@ -15,12 +15,12 @@ const Header = () => {
         "div",
         {
           key: "app-title-section",
-          className: "flex items-center gap-1sm",
+          className: "headerText flex items-center gap-1sm",
         },
         [
           React.createElement(MaterialIcon, {
-            key: "foundation-icon",
-            name: "foundation",
+            key: "all_inclusive-icon",
+            name: "all_inclusive",
             className: "text-stat-primary",
           }),
           React.createElement(
@@ -29,7 +29,7 @@ const Header = () => {
               key: "app-name",
               className: "text-stat-font text-sm font-semibold font-noto",
             },
-            "StatBridge App"
+            "StatSynergy App"
           ),
         ]
       ),

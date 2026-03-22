@@ -1,48 +1,57 @@
 const React = require("react");
+const { apiClient } = require("../components/apiClient.js");
 
-// Router Context
 const RouterContext = React.createContext();
 
-// Simple Router Hook
-const useRouter = () => {
-  const context = React.useContext(RouterContext);
-  if (!context) {
-    throw new Error("useRouter must be used within a RouterProvider");
-  }
-  return context;
-};
+const useRouter = () =>
+  React.useContext(RouterContext) ??
+  (() => {
+    throw new Error("No RouterProvider");
+  })();
 
-// Router Provider
 const RouterProvider = ({ children }) => {
-  const [currentRoute, setCurrentRoute] = React.useState("welcome");
-  const [routeParams, setRouteParams] = React.useState(null);
+  const [route, setRoute] = React.useState("welcome");
+  const [params, setParams] = React.useState(null);
+  const [currentProject, setCurrentProject] = React.useState(null);
 
-  const navigate = React.useCallback((route, params = null) => {
-    console.log("Navigating to:", route, "with params:", params);
-    setCurrentRoute(route);
-    setRouteParams(params);
+  const navigate = React.useCallback((to, p = null) => {
+    setRoute(to);
+    setParams(p);
+    if (to === "project-view" && p?.project) setCurrentProject(p.project);
+    if (to === "welcome") setCurrentProject(null);
   }, []);
+
+  // Restore last opened project on app startup
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const projects = await apiClient.getProjects();
+        if (projects.length > 0) {
+          const last = projects[0]; // Newest first (due to unshift in createProject)
+          setCurrentProject(last);
+          if (route === "welcome") {
+            navigate("project-view", { project: last });
+          }
+        }
+        // If no projects exist → stay on welcome screen with empty sidebar
+      } catch (err) {
+        console.error("Failed to load projects on application start:", err);
+        // On error, remain on welcome screen – safe fallback for future real API
+      }
+    })();
+  }, []); // Run only once on mount
 
   const value = React.useMemo(
     () => ({
-      currentRoute,
-      routeParams,
+      currentRoute: route,
+      routeParams: params,
+      currentProject,
       navigate,
     }),
-    [currentRoute, routeParams, navigate]
+    [route, params, currentProject, navigate]
   );
 
-  return React.createElement(
-    RouterContext.Provider,
-    {
-      value: value,
-    },
-    children
-  );
+  return React.createElement(RouterContext.Provider, { value }, children);
 };
 
-module.exports = {
-  RouterProvider,
-  useRouter,
-  RouterContext,
-};
+module.exports = { RouterProvider, useRouter };
