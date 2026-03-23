@@ -3,6 +3,7 @@ const { useDialog } = require("./dialog.js");
 const { MaterialIcon } = require("./button.js");
 const { useRouter } = require("../router/router.js");
 const { apiClient } = require("./apiClient.js");
+const { CURRENT_USER_ID } = require("../context/projectContext.js");
 
 // ============================================================================
 // ProjectsList
@@ -92,7 +93,7 @@ const MyLastProjectsSection = () => {
   // We update the list every time mockStorage changes (via polling – simple and reliable)
   React.useEffect(() => {
     const load = async () => {
-      const list = await apiClient.getProjects();
+      const list = await apiClient.getProjects(CURRENT_USER_ID); // TODO: replace with real user_id from auth
       setProjects(list);
       setIsLoading(false);
     };

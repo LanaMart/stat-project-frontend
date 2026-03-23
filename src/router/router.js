@@ -10,7 +10,7 @@ const useRouter = () =>
   })();
 
 const RouterProvider = ({ children }) => {
-  const [route, setRoute] = React.useState("welcome");
+  const [route, setRoute] = React.useState("login");
   const [params, setParams] = React.useState(null);
   const [currentProject, setCurrentProject] = React.useState(null);
 
@@ -25,7 +25,7 @@ const RouterProvider = ({ children }) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const projects = await apiClient.getProjects();
+        const projects = await apiClient.getProjects(1); // TODO: replace with real user_id from auth
         if (projects.length > 0) {
           const last = projects[0]; // Newest first (due to unshift in createProject)
           setCurrentProject(last);

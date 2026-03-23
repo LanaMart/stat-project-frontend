@@ -58,7 +58,7 @@ const YourDataDashboard = ({
   const [alertProps, setAlertProps] = React.useState({ title: "", errors: [] });
 
   // Status for Alert
-  const { state } = useProject();
+  const { userId } = useProject();
 
   // ============================================================================
   // CSV INTERPRETATION
@@ -72,17 +72,8 @@ const YourDataDashboard = ({
       setIsLoading(true);
       setParseError(null);
 
-      // Added check: File uploaded?
-      const project = await apiClient.getProjectById(projectId);
-      if (!project) {
-        throw new Error("Project not found");
-      }
-      if (!project.hasFile || !state.hasUploadedFile) {
-        throw new Error("No file uploaded for this project");
-      }
-
       // Getting a file from the backend
-      const fileBlob = await apiClient.downloadProjectFile(projectId);
+      const fileBlob = await apiClient.downloadProjectFile(userId, projectId, fileName);
 
       // CSV parcing
       const parsedData = await parseCSV(fileBlob);

@@ -3,6 +3,7 @@ const { MyLastProjectsSection } = require("../projects.js");
 const { QPushButton, MaterialIcon } = require("../button.js");
 const { useRouter } = require("../../router/router.js");
 const { apiClient } = require("../apiClient.js");
+const { CURRENT_USER_ID } = require("../../context/projectContext.js");
 
 const StatBridgeLogo = () => {
   return React.createElement("img", {
@@ -22,7 +23,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
     if (!projectName.trim()) return;
     try {
       const created = await apiClient.createProject({
-        name: projectName.trim(),
+        name: projectName.trim(), user_id: CURRENT_USER_ID
       });
       setProjectName("");
       //setNewProject(created);

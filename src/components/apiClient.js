@@ -51,15 +51,29 @@ const simulateNetworkDelay = (ms = 200) =>
 // ============================================================================
 
 const apiClient = {
+  /* used mock storage
   getProjects: async () => {
     await simulateNetworkDelay();
-    return [...mockStorage.projects]; // May return empty array → UI shows "No projects yet"
+    return [...mockStorage.projects];
   },
+  */
 
+  getProjects: async (user_id) => {
+    const params = new URLSearchParams({ user_id });
+    const response = await fetch( 
+      `http://localhost:8000/api/get_projects?${params.toString()}`
+    );
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Failed to fetch projects (${response.status})`);
+    }
+    return response.json(); // [{ id, name, created_at }, ...]
+  },
+  /* this was used to mock stuff
   createProject: async (projectData) => {
     await simulateNetworkDelay();
     const newProject = {
-      id: `project_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: "project_X",
       name: projectData.name?.trim() || "Untitled Project",
       createdAt: new Date().toISOString(),
     };
@@ -71,27 +85,51 @@ const apiClient = {
     };
     persist();
     return newProject;
-  },
+  },*/
 
-  getProjectById: async (projectId) => {
-    await simulateNetworkDelay();
-    const project = mockStorage.projects.find((p) => p.id === projectId);
-    const fileData = mockStorage.projectFiles[projectId];
-    const stateData = mockStorage.projectStates[projectId];
 
-    if (!project) return null;
+  createProject: async ({ name, user_id }) => {
+    const params = new URLSearchParams({ name, user_id });
+
+    const response = await fetch(
+      `http://localhost:8000/api/create_project?${params.toString()}`,
+      { method: "POST" }
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Create failed (${response.status})`);
+    }
+
+    const projectId = await response.json();
 
     return {
-      ...project,
-      hasFile: !!fileData,
-      fileName: fileData?.metadata?.name,
-      fileSize: fileData?.metadata?.size,
-      uploadedAt: fileData?.metadata?.uploadedAt,
-      state: stateData || {
-        projectState: "upload",
-        uploadSubState: "idle",
-        hasUploadedFile: false,
-      },
+      id: projectId,
+      name,
+    };
+  },
+
+
+  getProjectById: async (projectId, userId) => {
+    const [projectRes, filesRes] = await Promise.all([
+      fetch(`http://localhost:8000/api/get_project/${projectId}`),
+      fetch(`http://localhost:8000/api/project_files/${userId}/${projectId}`),
+    ]);
+
+    if (!projectRes.ok) return null;
+    const project = await projectRes.json();
+    if (!project) return null;
+
+    const files = filesRes.ok ? await filesRes.json() : { hasFile: false };
+
+    return {
+      id: project.id,
+      name: project.name,
+      createdAt: project.createdAt,
+      hasFile: files.hasFile,
+      fileName: files.fileName,
+      fileSize: files.fileSize,
+      uploadedAt: files.uploadedAt,
     };
   },
 
@@ -119,14 +157,30 @@ const apiClient = {
     return { valid: true };
   },
 
-  uploadFile: async (projectId, file, onProgress) => {
-    await simulateNetworkDelay(500);
-    for (let i = 0; i <= 100; i += 20) {
-      await simulateNetworkDelay(200);
-      if (onProgress) onProgress(i);
-    }
+  uploadFile: async (userId, projectId, file, onProgress) => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-    const arrayBuffer = await file.arrayBuffer();
+    const xhr = new XMLHttpRequest();
+
+    await new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable && onProgress) {
+          onProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      });
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed: ${xhr.status} ${xhr.responseText}`));
+        }
+      });
+      xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+      xhr.open("POST", `http://localhost:8000/api/dataset/upload/${userId}/${projectId}`);
+      xhr.send(formData);
+    });
+
     const metadata = {
       name: file.name,
       size: file.size,
@@ -135,7 +189,6 @@ const apiClient = {
       uploadedAt: new Date().toISOString(),
     };
 
-    mockStorage.projectFiles[projectId] = { arrayBuffer, metadata };
     mockStorage.projectStates[projectId] = {
       ...mockStorage.projectStates[projectId],
       hasUploadedFile: true,
@@ -166,19 +219,17 @@ const apiClient = {
     return { success: true };
   },
 
-  downloadProjectFile: async (projectId) => {
-    await simulateNetworkDelay();
-    const data = mockStorage.projectFiles[projectId];
-    if (data && data.metadata && !data.arrayBuffer) {
-      throw new Error(
-        "File lost after restart in mock-backend — please re-upload"
-      );
+  downloadProjectFile: async (userId, projectId, fileName) => {
+    const bucket = "data-container1";
+    const key = `users/${userId}/${projectId}/${fileName}`;
+    const response = await fetch(
+      `http://localhost:8000/api/dataset/${bucket}/${key}/download`
+    );
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status}`);
     }
-    if (!data || !data.arrayBuffer) {
-      throw new Error("File not found");
-    }
-    const blob = new Blob([data.arrayBuffer], { type: data.metadata.type });
-    return new File([blob], data.metadata.name, { type: data.metadata.type });
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: blob.type });
   },
 
   getProjectState: async (projectId) => {
@@ -200,6 +251,32 @@ const apiClient = {
     };
     persist();
     return { success: true };
+  },
+
+  loginUser: async (email, password) => {
+    const params = new URLSearchParams({ email, password });
+    const response = await fetch(
+      `http://localhost:8000/api/login_user?${params.toString()}`,
+      { method: "POST" }
+    );
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Login failed (${response.status})`);
+    }
+    return response.json(); // { user_id, email, runs_left } or null
+  },
+
+  registerUser: async (email, password) => {
+    const params = new URLSearchParams({ email, password });
+    const response = await fetch(
+      `http://localhost:8000/register_user?${params.toString()}`,
+      { method: "POST" }
+    );
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Registration failed (${response.status})`);
+    }
+    return response.json(); // new user_id
   },
 };
 
