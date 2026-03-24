@@ -142,7 +142,7 @@ const ProjectProvider = ({
       setIsLoading(true);
 
       try {
-        const projectData = await apiClient.getProjectById(loadId, userId);
+        const projectData = await apiClient.getProjectById(loadId);
         console.log("Project data:", projectData);
 
         if (isCancelled || currentProjectIdRef.current !== loadId) return;

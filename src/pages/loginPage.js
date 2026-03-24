@@ -4,7 +4,7 @@ const { apiClient } = require("../components/apiClient.js");
 const { useRouter } = require("../router/router.js");
 
 const LoginPage = () => {
-  const { navigate } = useRouter();
+  const { setIsAuthenticated } = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -23,7 +23,7 @@ const LoginPage = () => {
         setError("Invalid email or password.");
         return;
       }
-      navigate("welcome");
+      setIsAuthenticated(true);
     } catch (err) {
       const msg = err?.message || String(err);
       if (msg.includes("not confirmed")) {

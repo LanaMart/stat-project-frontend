@@ -19,6 +19,9 @@
  * @param {string} value - значение для анализа
  * @returns {string} - 'number' | 'boolean' | 'date' | 'string'
  */
+
+const Papa = require('papaparse');
+
 const detectDataType = (value) => {
   if (!value || value.trim() === "") {
     return "string";
@@ -98,7 +101,7 @@ const inferColumnType = (columnData) => {
 const parseCSV = async (file) => {
   return new Promise((resolve, reject) => {
     // Используем Papa.parse (доступен глобально через Papaparse)
-    const Papa = window.Papa || require("papaparse");
+    //const Papa = window.Papa || require("papaparse");
 
     if (!Papa) {
       reject(new Error("Papaparse library not available"));

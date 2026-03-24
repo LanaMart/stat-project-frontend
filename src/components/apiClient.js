@@ -1,3 +1,23 @@
+// ============================================================================
+// AUTH TOKEN STORE
+// ============================================================================
+console.log("token on startup:", localStorage.getItem("access_token"));
+const tokenStore = {
+  _token: localStorage.getItem("access_token"), // load on startup;used to be null; need localStorage to use token/remember user logged-in
+  setToken(token) { 
+    this._token = token; 
+    localStorage.setItem("access_token", token);
+  },
+  getToken() { return this._token; },
+  clear() { 
+    this._token = null; 
+    localStorage.removeItem("access_token");
+  },
+  authHeader() {
+    return this._token ? { Authorization: `Bearer ${this._token}` } : {};
+  },
+};
+
 const STORAGE_KEY = "statSynergy_mock_data_v3";
 
 let mockStorage = {
@@ -46,54 +66,45 @@ const persist = () => {
 const simulateNetworkDelay = (ms = 200) =>
   new Promise((r) => setTimeout(r, ms));
 
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) throw new Error("No refresh token");
+  
+  const response = await fetch("http://localhost:8000/api/refresh_token", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${refreshToken}` }
+  });
+  if (!response.ok) throw new Error("Refresh failed");
+  
+  const { access_token } = await response.json();
+  tokenStore.setToken(access_token);
+  return access_token;
+};
+
 // ============================================================================
 // API CLIENT
 // ============================================================================
 
 const apiClient = {
-  /* used mock storage
-  getProjects: async () => {
-    await simulateNetworkDelay();
-    return [...mockStorage.projects];
-  },
-  */
 
-  getProjects: async (user_id) => {
-    const params = new URLSearchParams({ user_id });
-    const response = await fetch( 
-      `http://localhost:8000/api/get_projects?${params.toString()}`
+  getProjects: async () => {
+    const response = await fetch(
+      `http://localhost:8000/api/get_projects`,
+      { headers: tokenStore.authHeader() }
     );
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `Failed to fetch projects (${response.status})`);
     }
-    return response.json(); // [{ id, name, created_at }, ...]
+    return response.json(); // [{ id, name, created }, ...]
   },
-  /* this was used to mock stuff
-  createProject: async (projectData) => {
-    await simulateNetworkDelay();
-    const newProject = {
-      id: "project_X",
-      name: projectData.name?.trim() || "Untitled Project",
-      createdAt: new Date().toISOString(),
-    };
-    mockStorage.projects.unshift(newProject); // Newest projects first
-    mockStorage.projectStates[newProject.id] = {
-      projectState: "upload",
-      uploadSubState: "idle",
-      hasUploadedFile: false,
-    };
-    persist();
-    return newProject;
-  },*/
 
-
-  createProject: async ({ name, user_id }) => {
-    const params = new URLSearchParams({ name, user_id });
+  createProject: async ({ name }) => {
+    const params = new URLSearchParams({ name });
 
     const response = await fetch(
       `http://localhost:8000/api/create_project?${params.toString()}`,
-      { method: "POST" }
+      { method: "POST", headers: tokenStore.authHeader() }
     );
 
     if (!response.ok) {
@@ -110,10 +121,10 @@ const apiClient = {
   },
 
 
-  getProjectById: async (projectId, userId) => {
+  getProjectById: async (projectId) => {
     const [projectRes, filesRes] = await Promise.all([
-      fetch(`http://localhost:8000/api/get_project/${projectId}`),
-      fetch(`http://localhost:8000/api/project_files/${userId}/${projectId}`),
+      fetch(`http://localhost:8000/api/get_project/${projectId}`, { headers: tokenStore.authHeader() }),
+      fetch(`http://localhost:8000/api/project_files/${projectId}`, { headers: tokenStore.authHeader() }),
     ]);
 
     if (!projectRes.ok) return null;
@@ -254,16 +265,25 @@ const apiClient = {
   },
 
   loginUser: async (email, password) => {
-    const params = new URLSearchParams({ email, password });
-    const response = await fetch(
-      `http://localhost:8000/api/login_user?${params.toString()}`,
-      { method: "POST" }
-    );
+    //we no longer need this? const params = new URLSearchParams({ email, password });
+    const response = await fetch("http://localhost:8000/api/login_user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `Login failed (${response.status})`);
     }
-    return response.json(); // { user_id, email, runs_left } or null
+    const result = await response.json(); // { user_id, email, runs_left, access_token, refresh_token }
+    if (result?.access_token) {
+      tokenStore.setToken(result.access_token);
+      localStorage.setItem("access_token", result.access_token); // this makes sure we use token - user no need to login every time
+    }
+    if (result?.refresh_token) {
+      localStorage.setItem("refresh_token", result.refresh_token);
+    }
+    return result;
   },
 
   registerUser: async (email, password) => {
@@ -280,4 +300,4 @@ const apiClient = {
   },
 };
 
-module.exports = { apiClient };
+module.exports = { apiClient, tokenStore, refreshAccessToken }; //export refreshAccessToken because needed in router.js
