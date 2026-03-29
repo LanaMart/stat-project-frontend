@@ -4,13 +4,15 @@
 console.log("token on startup:", localStorage.getItem("access_token"));
 const tokenStore = {
   _token: localStorage.getItem("access_token"), // load on startup;used to be null; need localStorage to use token/remember user logged-in
-  setToken(token) { 
-    this._token = token; 
+  setToken(token) {
+    this._token = token;
     localStorage.setItem("access_token", token);
   },
-  getToken() { return this._token; },
-  clear() { 
-    this._token = null; 
+  getToken() {
+    return this._token;
+  },
+  clear() {
+    this._token = null;
     localStorage.removeItem("access_token");
   },
   authHeader() {
@@ -69,13 +71,13 @@ const simulateNetworkDelay = (ms = 200) =>
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) throw new Error("No refresh token");
-  
+
   const response = await fetch("http://localhost:8000/api/refresh_token", {
     method: "POST",
-    headers: { Authorization: `Bearer ${refreshToken}` }
+    headers: { Authorization: `Bearer ${refreshToken}` },
   });
   if (!response.ok) throw new Error("Refresh failed");
-  
+
   const { access_token } = await response.json();
   tokenStore.setToken(access_token);
   return access_token;
@@ -86,12 +88,10 @@ const refreshAccessToken = async () => {
 // ============================================================================
 
 const apiClient = {
-
   getProjects: async () => {
-    const response = await fetch(
-      `http://localhost:8000/api/get_projects`,
-      { headers: tokenStore.authHeader() }
-    );
+    const response = await fetch(`http://localhost:8000/api/get_projects`, {
+      headers: tokenStore.authHeader(),
+    });
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `Failed to fetch projects (${response.status})`);
@@ -104,7 +104,7 @@ const apiClient = {
 
     const response = await fetch(
       `http://localhost:8000/api/create_project?${params.toString()}`,
-      { method: "POST", headers: tokenStore.authHeader() }
+      { method: "POST", headers: tokenStore.authHeader() },
     );
 
     if (!response.ok) {
@@ -120,11 +120,14 @@ const apiClient = {
     };
   },
 
-
   getProjectById: async (projectId) => {
     const [projectRes, filesRes] = await Promise.all([
-      fetch(`http://localhost:8000/api/get_project/${projectId}`, { headers: tokenStore.authHeader() }),
-      fetch(`http://localhost:8000/api/project_files/${projectId}`, { headers: tokenStore.authHeader() }),
+      fetch(`http://localhost:8000/api/get_project/${projectId}`, {
+        headers: tokenStore.authHeader(),
+      }),
+      fetch(`http://localhost:8000/api/project_files/${projectId}`, {
+        headers: tokenStore.authHeader(),
+      }),
     ]);
 
     if (!projectRes.ok) return null;
@@ -147,7 +150,7 @@ const apiClient = {
   deleteProject: async (projectId) => {
     await simulateNetworkDelay();
     mockStorage.projects = mockStorage.projects.filter(
-      (p) => p.id !== projectId
+      (p) => p.id !== projectId,
     );
     delete mockStorage.projectFiles[projectId];
     delete mockStorage.projectStates[projectId];
@@ -187,8 +190,14 @@ const apiClient = {
           reject(new Error(`Upload failed: ${xhr.status} ${xhr.responseText}`));
         }
       });
-      xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
-      xhr.open("POST", `http://localhost:8000/api/dataset/upload/${userId}/${projectId}`);
+      xhr.addEventListener("error", () =>
+        reject(new Error("Network error during upload")),
+      );
+      xhr.open(
+        "POST",
+        `http://localhost:8000/api/dataset/upload/${userId}/${projectId}`,
+      );
+      xhr.setRequestHeader("Authorization", `Bearer ${tokenStore.getToken()}`);
       xhr.send(formData);
     });
 
@@ -234,7 +243,7 @@ const apiClient = {
     const bucket = "data-container1";
     const key = `users/${userId}/${projectId}/${fileName}`;
     const response = await fetch(
-      `http://localhost:8000/api/dataset/${bucket}/${key}/download`
+      `http://localhost:8000/api/dataset/${bucket}/${key}/download`,
     );
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status}`);
@@ -267,9 +276,9 @@ const apiClient = {
   loginUser: async (email, password) => {
     //we no longer need this? const params = new URLSearchParams({ email, password });
     const response = await fetch("http://localhost:8000/api/login_user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
     if (!response.ok) {
       const text = await response.text();
@@ -289,8 +298,8 @@ const apiClient = {
   registerUser: async (email, password) => {
     const params = new URLSearchParams({ email, password });
     const response = await fetch(
-      `http://localhost:8000/register_user?${params.toString()}`,
-      { method: "POST" }
+      `http://localhost:8000/api/register_user?${params.toString()}`,
+      { method: "POST" },
     );
     if (!response.ok) {
       const text = await response.text();
