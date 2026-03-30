@@ -5,6 +5,7 @@ const {
   PROJECT_STATES,
   UPLOAD_STATES,
   ProjectProvider,
+  CURRENT_USER_ID,
 } = require("../context/projectContext.js");
 const { DragDropZone, UploadProgress } = require("../components/upload.js");
 const { ProjectHeader } = require("../components/projectHeader.js");
@@ -51,8 +52,9 @@ const ProjectViewPage = ({ project }) => {
   return React.createElement(
     ProjectProvider,
     {
-      key: project.id, // Key for full remount when changing projects
+      key: project.id,
       projectId: project.id,
+      userId: CURRENT_USER_ID,
       initialMeta: { name: project.name, createdAt: project.createdAt },
     },
     React.createElement(ProjectViewContent, { project })

@@ -2,6 +2,7 @@ const React = require("react");
 const { useRouter } = require("./router.js");
 const { WelcomePage } = require("../pages/welcomePage.js");
 const { ProjectViewPage } = require("../pages/projectViewPage.js");
+const { LoginPage } = require("../pages/loginPage.js");
 
 // Router Component
 const AppRouter = () => {
@@ -15,6 +16,8 @@ const AppRouter = () => {
       routeParams
     );
     switch (currentRoute) {
+      case "login":
+        return React.createElement(LoginPage);
       case "welcome":
         return React.createElement(WelcomePage);
       case "project-view":
@@ -23,11 +26,7 @@ const AppRouter = () => {
           console.warn("No project ID in routeParams");
           return React.createElement(WelcomePage);
         }
-        return React.createElement(
-          ProjectProvider,
-          { projectId: project.id }, // ← Динамический ID
-          React.createElement(ProjectViewPage, { project })
-        );
+        return React.createElement(ProjectViewPage, { project });
       default:
         return React.createElement(WelcomePage);
     }

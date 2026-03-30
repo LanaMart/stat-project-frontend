@@ -1,5 +1,5 @@
 const React = require("react");
-const { apiClient } = require("../components/apiClient.js");
+const { apiClient, refreshAccessToken } = require("../components/apiClient.js");
 
 const RouterContext = React.createContext();
 
@@ -10,9 +10,22 @@ const useRouter = () =>
   })();
 
 const RouterProvider = ({ children }) => {
-  const [route, setRoute] = React.useState("welcome");
+  const [route, setRoute] = React.useState("login");
   const [params, setParams] = React.useState(null);
   const [currentProject, setCurrentProject] = React.useState(null);
+  //const [isAuthenticated, setIsAuthenticated] = React.useState(false); this line always starts us as not logged in, does not use token
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        await refreshAccessToken(); // silently get a fresh access token
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    })();
+  }, []);
 
   const navigate = React.useCallback((to, p = null) => {
     setRoute(to);
@@ -21,25 +34,25 @@ const RouterProvider = ({ children }) => {
     if (to === "welcome") setCurrentProject(null);
   }, []);
 
-  // Restore last opened project on app startup
+  // Load projects and navigate to the last one after login
   React.useEffect(() => {
+    if (!isAuthenticated) return;
     (async () => {
       try {
         const projects = await apiClient.getProjects();
         if (projects.length > 0) {
-          const last = projects[0]; // Newest first (due to unshift in createProject)
+          const last = projects[0];
           setCurrentProject(last);
-          if (route === "welcome") {
-            navigate("project-view", { project: last });
-          }
+          navigate("project-view", { project: last });
+        } else {
+          navigate("welcome");
         }
-        // If no projects exist → stay on welcome screen with empty sidebar
       } catch (err) {
-        console.error("Failed to load projects on application start:", err);
-        // On error, remain on welcome screen – safe fallback for future real API
+        console.error("Failed to load projects after login:", err);
+        navigate("welcome");
       }
     })();
-  }, []); // Run only once on mount
+  }, [isAuthenticated]); // Re-runs when user logs in
 
   const value = React.useMemo(
     () => ({
@@ -47,8 +60,10 @@ const RouterProvider = ({ children }) => {
       routeParams: params,
       currentProject,
       navigate,
+      isAuthenticated,
+      setIsAuthenticated,
     }),
-    [route, params, currentProject, navigate]
+    [route, params, currentProject, navigate, isAuthenticated, setIsAuthenticated]
   );
 
   return React.createElement(RouterContext.Provider, { value }, children);

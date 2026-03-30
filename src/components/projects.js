@@ -87,20 +87,17 @@ const MyLastProjectsSection = () => {
   const [projects, setProjects] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const { navigate, currentProject } = useRouter();
+  const { navigate, currentProject, isAuthenticated } = useRouter();
 
-  // We update the list every time mockStorage changes (via polling – simple and reliable)
   React.useEffect(() => {
+    if (!isAuthenticated) return;
     const load = async () => {
       const list = await apiClient.getProjects();
       setProjects(list);
       setIsLoading(false);
     };
     load();
-
-    const interval = setInterval(load, 800); //check every 0.8 sec - instant for the user
-    return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
   const handleSelect = (project) => {
     navigate("project-view", { project });

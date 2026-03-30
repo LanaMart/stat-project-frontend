@@ -109,9 +109,13 @@ const projectReducer = (prev, action) => {
 // PROVIDER COMPONENT
 // ============================================================================
 
+const CURRENT_USER_ID = 1;
+const CURRENT_PROJECT_ID = "project_X";
+
 const ProjectProvider = ({
   children,
-  projectId = "default",
+  projectId = CURRENT_PROJECT_ID,
+  userId = CURRENT_USER_ID,
   initialMeta = {},
 }) => {
   const [state, dispatch] = React.useReducer(projectReducer, {
@@ -232,7 +236,7 @@ const ProjectProvider = ({
     dispatch({ type: "START_UPLOAD", file });
 
     try {
-      const result = await apiClient.uploadFile(projectId, file, (progress) => {
+      const result = await apiClient.uploadFile(userId, projectId, file, (progress) => {
         dispatch({ type: "UPDATE_PROGRESS", progress });
       });
 
@@ -276,6 +280,7 @@ const ProjectProvider = ({
     PROJECT_STATES,
     UPLOAD_STATES,
     isLoading,
+    userId,
   };
 
   return React.createElement(ProjectContext.Provider, { value }, children);
@@ -311,4 +316,6 @@ module.exports = {
   useProject,
   PROJECT_STATES,
   UPLOAD_STATES,
+  CURRENT_USER_ID,
+  CURRENT_PROJECT_ID,
 };
