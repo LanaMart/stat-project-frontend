@@ -2,6 +2,7 @@ const React = require("react");
 const { useState } = React;
 const { apiClient } = require("../components/apiClient.js");
 const { useRouter } = require("../router/router.js");
+const { QPushButton } = require("../components/button.js");
 
 const LoginPage = () => {
   const { setIsAuthenticated } = useRouter();
@@ -47,7 +48,9 @@ const LoginPage = () => {
       await apiClient.registerUser(email, password);
       setError(null);
       // Show success hint inline
-      setError("__success__Registration successful! Please check your email to confirm your account.");
+      setError(
+        "__success__Registration successful! Please check your email to confirm your account.",
+      );
     } catch (err) {
       const msg = err?.message || String(err);
       if (msg.includes("already registered")) {
@@ -67,13 +70,13 @@ const LoginPage = () => {
     "div",
     {
       className:
-        "flex flex-col items-center justify-center w-full h-full bg-stat-bg font-noto",
+        "flex flex-col items-center justify-center w-full h-full font-noto",
     },
     React.createElement(
       "div",
       {
         className:
-          "flex flex-col gap-3lg w-full max-w-[360px] bg-stat-white rounded-xl shadow-xl p-7xl",
+          "flex flex-col gap-3lg w-full max-w-[360px] bg-stat-white rounded-xl shadow-xl p-3xl",
       },
       [
         // Title
@@ -87,7 +90,7 @@ const LoginPage = () => {
                 key: "h1",
                 className: "text-xxl font-bold text-stat-font text-center",
               },
-              "Welcome back"
+              "Welcome back",
             ),
             React.createElement(
               "p",
@@ -95,9 +98,9 @@ const LoginPage = () => {
                 key: "sub",
                 className: "text-sm text-stat-font-secondary text-center",
               },
-              "Sign in or create a new account"
+              "Sign in or create a new account",
             ),
-          ]
+          ],
         ),
 
         // Email field
@@ -112,7 +115,7 @@ const LoginPage = () => {
                 className: "text-sm font-medium text-stat-font",
                 htmlFor: "login-email",
               },
-              "Email"
+              "Email",
             ),
             React.createElement("input", {
               key: "input",
@@ -125,7 +128,7 @@ const LoginPage = () => {
                 "w-full px-3md py-1sm rounded-2sm border border-stat-font-tertiary text-stat-font text-sm bg-stat-bg focus:outline-none focus:border-stat-primary transition-colors duration-150",
               disabled: loading,
             }),
-          ]
+          ],
         ),
 
         // Password field
@@ -140,7 +143,7 @@ const LoginPage = () => {
                 className: "text-sm font-medium text-stat-font",
                 htmlFor: "login-password",
               },
-              "Password"
+              "Password",
             ),
             React.createElement("input", {
               key: "input",
@@ -154,7 +157,7 @@ const LoginPage = () => {
                 "w-full px-3md py-1sm rounded-2sm border border-stat-font-tertiary text-stat-font text-sm bg-stat-bg focus:outline-none focus:border-stat-primary transition-colors duration-150",
               disabled: loading,
             }),
-          ]
+          ],
         ),
 
         // Feedback message
@@ -169,40 +172,40 @@ const LoginPage = () => {
                   : "bg-stat-error-50 text-stat-error-700 border border-stat-error-200"
               }`,
             },
-            displayMessage
+            displayMessage,
           ),
 
         // Buttons
         React.createElement(
           "div",
-          { key: "buttons", className: "flex flex-col gap-xs" },
+          { key: "buttons", className: "flex flex-col gap-1sm" },
           [
             React.createElement(
-              "button",
+              QPushButton,
               {
                 key: "login-btn",
                 onClick: handleLogin,
                 disabled: loading,
-                className:
-                  "w-full py-1sm rounded-2sm bg-stat-primary text-stat-white text-sm font-semibold hover:bg-stat-primary-600 active:bg-stat-primary-800 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
+                variant: "primary",
+                className: "w-full",
               },
-              loading ? "Please wait…" : "Log in"
+              loading ? "Please wait…" : "Log in",
             ),
             React.createElement(
-              "button",
+              QPushButton,
               {
                 key: "register-btn",
                 onClick: handleRegister,
                 disabled: loading,
-                className:
-                  "w-full py-1sm rounded-2sm border border-stat-primary text-stat-primary text-sm font-semibold hover:bg-stat-primary-50 active:bg-stat-primary-100 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
+                variant: "outline",
+                className: "w-full",
               },
-              loading ? "Please wait…" : "Register"
+              loading ? "Please wait…" : "Register",
             ),
-          ]
+          ],
         ),
-      ]
-    )
+      ],
+    ),
   );
 };
 
