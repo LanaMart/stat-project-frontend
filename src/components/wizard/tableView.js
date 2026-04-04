@@ -1,6 +1,6 @@
 // src/components/tableView.js — ИСПРАВЛЕНИЕ: горизонтальная прокрутка полная, правая кнопка всегда видна (дизайн сохранён)
 const React = require("react");
-const { MaterialIcon } = require("../components/button.js");
+const { MaterialIcon } = require("../button.js");
 
 /**
  * TableView - Компонент для отображения CSV данных в виде таблицы
@@ -38,6 +38,7 @@ const TableView = ({
   columnTypes = {},
   onBack,
   onNext,
+  onReturnToSummary,
   selectedColumns: initialSelectedColumns,
   onColumnToggle,
   onTypeChange,
@@ -332,25 +333,37 @@ const TableView = ({
             ]
           ),
 
-          // Next button
-          React.createElement(
-            "button",
-            {
-              key: "next-btn",
-              className:
-                "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
-              onClick: onNext,
-              type: "button",
-            },
-            React.createElement(
-              "p",
-              {
-                className:
-                  "font-noto font-normal text-base leading-4xl text-stat-old-bg whitespace-nowrap",
-              },
-              "Next step"
-            )
-          ),
+          onReturnToSummary
+            ? React.createElement(
+                "button",
+                {
+                  key: "return-btn",
+                  type: "button",
+                  className:
+                    "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
+                  onClick: () => onReturnToSummary(selectedColumns),
+                },
+                React.createElement(
+                  "p",
+                  { className: "font-noto font-normal text-base leading-4xl text-stat-old-bg whitespace-nowrap" },
+                  "Back to summary"
+                )
+              )
+            : React.createElement(
+                "button",
+                {
+                  key: "next-btn",
+                  type: "button",
+                  className:
+                    "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
+                  onClick: () => onNext && onNext(selectedColumns),
+                },
+                React.createElement(
+                  "p",
+                  { className: "font-noto font-normal text-base leading-4xl text-stat-old-bg whitespace-nowrap" },
+                  "Next step"
+                )
+              ),
         ]
       ),
       React.createElement("style", {

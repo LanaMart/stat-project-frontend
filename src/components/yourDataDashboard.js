@@ -1,6 +1,10 @@
 const React = require("react");
 const { MaterialIcon } = require("../components/button.js");
-const { TableView } = require("../components/tableView.js");
+const { TableView } = require("./wizard/tableView.js");
+const { DataLearn } = require("./wizard/DataLearn.js");
+const { SelectVariable } = require("./wizard/selectVariable.js");
+const { Summary } = require("./wizard/summary.js");
+const { WaitingScreen } = require("./wizard/waitingScreen.js");
 const { parseCSV, validateParsedData } = require("../utils/csvParser.js");
 const { apiClient } = require("../components/apiClient.js");
 const Alert = require("../components/alert.js"); // Импорт Alert компонента
@@ -41,8 +45,23 @@ const YourDataDashboard = ({
   // STATE
   // ============================================================================
 
-  // Display mode: 'dashboard' or 'table'
+  // Display mode: 'dashboard' | 'table' | 'questionnaire' | 'selectVariable'
   const [viewMode, setViewMode] = React.useState("dashboard");
+
+  // Tracks which box was opened for editing from Summary ('columns'|'question'|'variable'|null)
+  const [editSource, setEditSource] = React.useState(null);
+
+  // Checked columns from TableView (business critical)
+  const [selectedColumns, setSelectedColumns] = React.useState([]);
+
+  // Full question object from DataLearn
+  const [selectedQuestion, setSelectedQuestion] = React.useState(null);
+
+  // Selected variable from SelectVariable
+  const [selectedVariable, setSelectedVariable] = React.useState(null);
+
+  // Generated report (set after WaitingScreen completes)
+  const [report, setReport] = React.useState(null);
 
   // CSV data after parsing
   const [csvData, setCsvData] = React.useState(null);
@@ -141,17 +160,13 @@ const YourDataDashboard = ({
   };
 
   /**
-   * Handler for the "Next step" button
+   * Handler for the "Next step" button from TableView
+   * Receives checked columns (business critical)
    */
-  const handleNextStep = () => {
-    console.log("➡️ Moving to next step with selected data:", csvData);
-    // TODO: Implement next step logic (e.g., navigate to validation/wizard)
-    // show custom alert
-    setAlertProps({
-      title: "Next Step",
-      errors: ["Functionality will be implemented in the next phase"],
-    });
-    setAlertVisible(true);
+  const handleNextStep = (checkedColumns = []) => {
+    console.log("➡️ Moving to questionnaire step. Checked columns:", checkedColumns);
+    setSelectedColumns(checkedColumns);
+    setViewMode("questionnaire");
   };
 
   /**
@@ -214,6 +229,81 @@ const YourDataDashboard = ({
     );
   }
 
+  // If questionnaire mode is selected, show DataLearn.
+  if (viewMode === "questionnaire") {
+    return React.createElement(DataLearn, {
+      onBack: handleBackToDashboard,
+      onPreviousStep: () => setViewMode("table"),
+      onNextStep: (question) => {
+        console.log("✅ DataLearn answer:", question);
+        setSelectedQuestion(question);
+        setViewMode("selectVariable");
+      },
+      ...(editSource === "question" ? {
+        onReturnToSummary: (question) => {
+          setSelectedQuestion(question);
+          setEditSource(null);
+          setViewMode("summary");
+        },
+      } : {}),
+    });
+  }
+
+  // If selectVariable mode is selected, show SelectVariable.
+  if (viewMode === "waiting") {
+    return React.createElement(WaitingScreen, {
+      onBack: handleBackToDashboard,
+      onComplete: () => {
+        setReport({
+          name: "Business report",
+          description: "Only necessary information, interpretation and prognoses that are important for your business",
+          projectName: fileName,
+        });
+        setViewMode("dashboard");
+        setAlertProps({ variant: "success", title: "Fantastic!", message: "Your report is ready" });
+        setAlertVisible(true);
+      },
+    });
+  }
+
+  if (viewMode === "summary") {
+    return React.createElement(Summary, {
+      selectedColumns,
+      selectedQuestion,
+      selectedVariable,
+      onBack: handleBackToDashboard,
+      onEditColumns: () => { setEditSource("columns"); setViewMode("table"); },
+      onEditQuestion: () => { setEditSource("question"); setViewMode("questionnaire"); },
+      onEditVariable: () => { setEditSource("variable"); setViewMode("selectVariable"); },
+      onColumnRemove: (col) =>
+        setSelectedColumns((prev) => prev.filter((c) => c !== col)),
+      onPrepareReport: () => {
+        console.log("🚀 Preparing report...", { selectedColumns, selectedQuestion, selectedVariable });
+        setViewMode("waiting");
+      },
+    });
+  }
+
+  if (viewMode === "selectVariable") {
+    return React.createElement(SelectVariable, {
+      projectId,
+      onBack: handleBackToDashboard,
+      onPreviousQuestion: () => setViewMode("questionnaire"),
+      onNextStep: (columnName) => {
+        console.log("✅ Selected variable:", columnName);
+        setSelectedVariable(columnName);
+        setViewMode("summary");
+      },
+      ...(editSource === "variable" ? {
+        onReturnToSummary: (columnName) => {
+          setSelectedVariable(columnName);
+          setEditSource(null);
+          setViewMode("summary");
+        },
+      } : {}),
+    });
+  }
+
   // If the table mode is selected, show TableView.
   if (viewMode === "table" && csvData) {
     return React.createElement(TableView, {
@@ -222,6 +312,13 @@ const YourDataDashboard = ({
       columnTypes: csvData.columnTypes,
       onBack: handleBackToDashboard,
       onNext: handleNextStep,
+      ...(editSource === "columns" ? {
+        onReturnToSummary: (cols) => {
+          setSelectedColumns(cols);
+          setEditSource(null);
+          setViewMode("summary");
+        },
+      } : {}),
     });
   }
   // Otherwise, show the Dashboard view
@@ -236,7 +333,9 @@ const YourDataDashboard = ({
       alertVisible &&
         React.createElement(Alert, {
           key: "custom-alert",
+          variant: alertProps.variant || "error",
           title: alertProps.title,
+          message: alertProps.message,
           errors: alertProps.errors,
           onClose: () => setAlertVisible(false),
         }),
@@ -439,9 +538,11 @@ const YourDataDashboard = ({
                 React.createElement(
                   "button",
                   {
-                    className:
-                      "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
-                    onClick: handleStartAnalyze,
+                    className: report
+                      ? "bg-stat-primary-200 flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl cursor-not-allowed opacity-50"
+                      : "bg-stat-primary flex gap-1sm items-center px-3md py-2sm rounded-sm h-6xl hover:bg-stat-primary-600 transition-colors",
+                    onClick: report ? undefined : handleStartAnalyze,
+                    disabled: !!report,
                     type: "button",
                   },
                   [
@@ -495,22 +596,87 @@ const YourDataDashboard = ({
             )
           ),
 
-          // Empty state message
-          React.createElement(
-            "div",
-            {
-              key: "empty-message",
-              className: "flex items-center w-full",
-            },
-            React.createElement(
-              "p",
-              {
-                className:
-                  "font-noto font-semibold text-sm leading-3xl text-stat-font-secondary whitespace-nowrap",
-              },
-              "There is no done reports yet. Please start the data analyze"
-            )
-          ),
+          report
+            ? // Report card
+              React.createElement(
+                "div",
+                {
+                  key: "report-card",
+                  className:
+                    "bg-stat-white border border-stat-primary-50 rounded-2sm flex flex-col gap-3md p-3lg w-full",
+                },
+                // Top row: project name badge + action buttons
+                React.createElement(
+                  "div",
+                  { className: "flex items-center justify-between w-full" },
+                  React.createElement(
+                    "span",
+                    { className: "bg-stat-primary-50 font-noto text-sm text-stat-font-secondary px-2xs py-2xs rounded" },
+                    report.projectName || fileName
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "flex gap-1sm items-center" },
+                    ...[
+                      { icon: "remove_red_eye", label: "View",     onClick: undefined },
+                      { icon: "download",       label: "Download", onClick: undefined },
+                      { icon: "delete",         label: "Delete",   onClick: () => setReport(null) },
+                    ].map(({ icon, label, onClick }) =>
+                      React.createElement(
+                        "button",
+                        {
+                          key: icon,
+                          type: "button",
+                          "aria-label": label,
+                          onClick,
+                          className:
+                            "border border-stat-primary-50 flex items-center p-xs w-[36px] h-[36px] rounded-sm hover:bg-stat-bg transition-colors",
+                        },
+                        React.createElement(MaterialIcon, {
+                          name: icon,
+                          className: "material-icons-outlined text-stat-font-secondary text-2xl",
+                        })
+                      )
+                    )
+                  )
+                ),
+                // Report name
+                React.createElement(
+                  "div",
+                  { className: "flex gap-1sm items-center" },
+                  React.createElement(MaterialIcon, {
+                    name: "insert_chart_outlined",
+                    className: "material-icons-outlined text-stat-primary text-2xl",
+                  }),
+                  React.createElement(
+                    "span",
+                    { className: "font-noto font-bold text-base text-stat-primary" },
+                    report.name
+                  )
+                ),
+                // Description
+                React.createElement(
+                  "p",
+                  { className: "font-noto font-normal text-base text-stat-font" },
+                  report.description
+                )
+              )
+            : // Empty state
+              React.createElement(
+                "div",
+                {
+                  key: "empty-message",
+                  className: "flex items-center w-full",
+                },
+                React.createElement(
+                  "p",
+                  {
+                    className:
+                      "font-noto font-semibold text-sm leading-3xl text-stat-font-secondary whitespace-nowrap",
+                  },
+                  "There is no done reports yet. Please start the data analyze"
+                )
+              ),
         ]
       ),
 

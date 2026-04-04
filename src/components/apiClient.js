@@ -273,6 +273,39 @@ const apiClient = {
     return { success: true };
   },
 
+  getColumns: async (projectId) => {
+    // TODO: replace with real API call when backend is ready
+    // const response = await fetch(
+    //   `http://localhost:8000/api/projects/${projectId}/columns`,
+    //   { headers: tokenStore.authHeader() }
+    // );
+    // const data = await response.json();
+    // return data.map((item) =>
+    //   typeof item === "string" ? { value: item, label: item } : item
+    // );
+
+    await simulateNetworkDelay(400);
+    return [
+      { value: "price", label: "Price" },
+      { value: "revenue", label: "Revenue" },
+      { value: "quantity", label: "Quantity" },
+      { value: "category", label: "Category" },
+      { value: "region", label: "Region" },
+      { value: "date", label: "Date" },
+    ];
+  },
+
+  getQuestions: async () => {
+    const response = await fetch("http://localhost:8000/api/questions", {
+      headers: tokenStore.authHeader(),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Failed to fetch questions (${response.status})`);
+    }
+    return response.json(); // [{ id, title, description, example }, ...]
+  },
+
   loginUser: async (email, password) => {
     //we no longer need this? const params = new URLSearchParams({ email, password });
     const response = await fetch("http://localhost:8000/api/login_user", {
