@@ -40,8 +40,8 @@ const ProjectViewPage = ({ project }) => {
       React.createElement(
         "div",
         { className: "text-stat-font text-base text-center font-noto" },
-        "Project not found"
-      )
+        "Project not found",
+      ),
     );
   }
 
@@ -57,7 +57,7 @@ const ProjectViewPage = ({ project }) => {
       userId: CURRENT_USER_ID,
       initialMeta: { name: project.name, createdAt: project.createdAt },
     },
-    React.createElement(ProjectViewContent, { project })
+    React.createElement(ProjectViewContent, { project }),
   );
 };
 
@@ -202,10 +202,10 @@ const ProjectViewContent = ({ project }) => {
                 progress: state.progress,
                 onCancel: cancelUpload,
                 processingTimeEstimate: state.processingTimeEstimate,
-              })
-            )
+              }),
+            ),
           ),
-      ].filter(Boolean)
+      ].filter(Boolean),
     );
   } else if (hasUploadedFile) {
     // Showing the Dashboard with data
@@ -230,20 +230,28 @@ const ProjectViewContent = ({ project }) => {
     "div",
     {
       "className":
-        "projectContent flex flex-col h-full w-full min-h-0 gap-4xl bg-stat-bg",
+        "projectContent flex flex-col h-full w-full min-h-0 bg-stat-bg",
       "data-page": "ProjectView",
       "data-project-id": project.id,
     },
     [
-      // Header
+      // Project header — full width, outside max-width constraint
       React.createElement(ProjectHeader, {
         key: "header",
         project: project,
       }),
 
-      // Main Content
-      mainContent,
-    ].filter(Boolean)
+      // Main content — constrained to 1200px and centered
+      React.createElement(
+        "div",
+        {
+          key: "content",
+          className:
+            "flex flex-col w-full max-w-[1200px] mx-auto mt-4xl flex-1 min-h-0 overflow-y-auto",
+        },
+        mainContent,
+      ),
+    ].filter(Boolean),
   );
 };
 

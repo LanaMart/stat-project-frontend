@@ -8,7 +8,7 @@ const StatBridgeLogo = () => {
   return React.createElement("img", {
     src: "../assets/images/logo.png",
     alt: "StatSynergy Logo",
-    className: "w-[55%] mx-auto object-contain rounded-lg",
+    className: "w-[75%] mx-auto object-contain rounded-lg",
     key: "logo-img",
   });
 };
@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         React.createElement(MaterialIcon, {
           name: isOpen ? "menu_open" : "menu",
           className: "text-stat-primary cursor-pointer text-xxl",
-        })
+        }),
       ),
 
       ...(isOpen
@@ -70,14 +70,14 @@ const Sidebar = ({ isOpen, onToggle }) => {
                   {
                     key: "tagline",
                     className:
-                      "text-stat-font-secondary text-base font-semibold leading-6 text-center w-4/5 mx-auto font-noto",
+                      "text-stat-font text-base font-semibold leading-6 text-center w-4/5 mx-auto font-noto",
                   },
-                  "Where Business meets Data"
+                  "Where Business meets Data",
                 ),
-              ]
+              ],
             ),
 
-            // Блок создания проекта — 100% твой оригинал
+            // Блок создания проекта
             React.createElement(
               "div",
               {
@@ -119,8 +119,8 @@ const Sidebar = ({ isOpen, onToggle }) => {
                           className:
                             "material-icons-outlined text-stat-primary",
                         }),
-                      ]
-                    )
+                      ],
+                    ),
                   ),
 
                   React.createElement(
@@ -146,13 +146,13 @@ const Sidebar = ({ isOpen, onToggle }) => {
                         React.createElement(
                           "span",
                           { key: "text", className: "text-base" },
-                          "Save"
+                          "Save",
                         ),
-                      ]
-                    )
+                      ],
+                    ),
                   ),
-                ]
-              )
+                ],
+              ),
             ),
 
             // Список проектов
@@ -163,11 +163,11 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 className: "flex-1 min-h-0 overflow-hidden",
                 style: { display: "flex", flexDirection: "column" },
               },
-              React.createElement(MyLastProjectsSection, { newProject })
+              React.createElement(MyLastProjectsSection, { newProject }),
             ),
           ]
         : []),
-    ]
+    ],
   );
 };
 

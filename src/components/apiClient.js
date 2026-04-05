@@ -96,7 +96,8 @@ const apiClient = {
       const text = await response.text();
       throw new Error(text || `Failed to fetch projects (${response.status})`);
     }
-    return response.json(); // [{ id, name, created }, ...]
+    const list = await response.json(); // [{ id, name, created }, ...]
+    return list.map((p) => ({ ...p, createdAt: p.createdAt || p.created || null }));
   },
 
   createProject: async ({ name }) => {
@@ -117,6 +118,7 @@ const apiClient = {
     return {
       id: projectId,
       name,
+      createdAt: new Date().toISOString(),
     };
   },
 

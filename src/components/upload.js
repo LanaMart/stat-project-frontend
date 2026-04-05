@@ -60,7 +60,7 @@ const UploadProgress = ({
                   key: "filename",
                   className: "text-stat-font text-sm text-center font-noto",
                 },
-                fileName || "Unknown file"
+                fileName || "Unknown file",
               ),
               React.createElement(
                 "div",
@@ -69,9 +69,9 @@ const UploadProgress = ({
                   className:
                     "text-stat-font-secondary text-xs text-center font-noto",
                 },
-                formatFileSize(fileSize || 0)
+                formatFileSize(fileSize || 0),
               ),
-            ]
+            ],
           ),
           React.createElement(MaterialIcon, {
             key: "right-icon",
@@ -81,7 +81,7 @@ const UploadProgress = ({
               : "material-icons-outlined text-stat-font-secondary hover:text-stat-warning cursor-pointer",
             onClick: isSuccess ? undefined : onCancel,
           }),
-        ]
+        ],
       ),
       React.createElement(
         "div",
@@ -106,7 +106,7 @@ const UploadProgress = ({
               width: progressWidth,
             },
           }),
-        ]
+        ],
       ),
       React.createElement(
         "div",
@@ -119,10 +119,10 @@ const UploadProgress = ({
           {
             className: "text-xs text-center font-noto text-stat-font",
           },
-          isSuccess ? "100%" : `${Math.min(Math.round(progress), 100)}%`
-        )
+          isSuccess ? "100%" : `${Math.min(Math.round(progress), 100)}%`,
+        ),
       ),
-    ]
+    ],
   );
 };
 
@@ -273,9 +273,9 @@ const DragDropZone = ({ disabled }) => {
                   className:
                     "text-stat-font text-base font-bold text-center font-noto",
                 },
-                "Please add your data"
+                "Please add your data",
               ),
-            ]
+            ],
           ),
           React.createElement(
             "div",
@@ -283,7 +283,7 @@ const DragDropZone = ({ disabled }) => {
               key: "description",
               className: "text-stat-font text-sm text-center w-full font-noto",
             },
-            "Drag and Drop your csv, pdf or xlsx file here"
+            "Drag and Drop your csv, pdf or xlsx file here",
           ),
           React.createElement(
             "div",
@@ -298,7 +298,7 @@ const DragDropZone = ({ disabled }) => {
                   key: "or-text",
                   className: "text-stat-font text-sm text-center font-noto",
                 },
-                "or"
+                "or",
               ),
               React.createElement(
                 QPushButton,
@@ -308,9 +308,9 @@ const DragDropZone = ({ disabled }) => {
                   className: "h-10",
                   disabled: disabled,
                 },
-                "Browse File"
+                "Browse File",
               ),
-            ]
+            ],
           ),
           React.createElement("input", {
             key: "file-input",
@@ -329,7 +329,7 @@ const DragDropZone = ({ disabled }) => {
                 }),
               ]
             : []),
-        ]
+        ],
       ),
 
       // Alert for validation error
@@ -340,7 +340,7 @@ const DragDropZone = ({ disabled }) => {
           errors: validationErrors,
           onClose: () => setValidationErrors([]),
         }),
-    ]
+    ],
   );
 };
 
@@ -391,7 +391,7 @@ const AnimatedFileDropping = ({
                 className:
                   "text-stat-font text-base text-center whitespace-nowrap overflow-hidden text-ellipsis font-noto",
               },
-              fileName
+              fileName,
             ),
             React.createElement(
               "div",
@@ -400,18 +400,18 @@ const AnimatedFileDropping = ({
                 className:
                   "text-stat-font-secondary text-sm text-center whitespace-nowrap flex-shrink-0 font-noto",
               },
-              fileSize
+              fileSize,
             ),
-          ]
+          ],
         ),
         React.createElement(MaterialIcon, {
           key: "cancel-icon",
-          name: "cancel",
+          name: "close",
           className:
             "material-icons-outlined text-stat-font-secondary cursor-pointer hover:text-stat-warning flex-shrink-0",
         }),
-      ]
-    )
+      ],
+    ),
   );
 };
 

@@ -1,124 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StatBridge App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet">
-    <link href="./styles/output.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StatSynergy App</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round"
+      rel="stylesheet"
+    />
+    <link href="./styles/output.css" rel="stylesheet" />
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Noto Sans', sans-serif;
-            background: #f5f6f7;
-            overflow: hidden;
-            -webkit-app-region: drag;
-        }
-        
-        * {
-            -webkit-app-region: no-drag;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Noto Sans", sans-serif;
+        background: #f5f6f7;
+        overflow: hidden;
+        -webkit-app-region: drag;
+      }
 
-        .drag-region {
-            -webkit-app-region: drag;
-        }
+      * {
+        -webkit-app-region: no-drag;
+      }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
+      .drag-region {
+        -webkit-app-region: drag;
+      }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(106, 90, 205, 0.3);
-            border-radius: 3px;
-        }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(106, 90, 205, 0.5);
-        }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(106, 90, 205, 0.3);
+        border-radius: 3px;
+      }
 
-        .material-icons {
-            user-select: none;
-        }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(106, 90, 205, 0.5);
+      }
 
-        /* Logo chart animation */
-        .logo-bar {
-            animation: chartPulse 2s ease-in-out infinite;
-        }
+      .material-icons {
+        user-select: none;
+      }
 
-        .logo-bar:nth-child(2) { animation-delay: 0.2s; }
-        .logo-bar:nth-child(3) { animation-delay: 0.4s; }
-        .logo-bar:nth-child(4) { animation-delay: 0.6s; }
+      /* Logo chart animation */
+      .logo-bar {
+        animation: chartPulse 2s ease-in-out infinite;
+      }
 
-        @keyframes chartPulse {
-            0%, 100% { opacity: 1; transform: scaleY(1); }
-            50% { opacity: 0.7; transform: scaleY(0.8); }
-        }
+      .logo-bar:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .logo-bar:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      .logo-bar:nth-child(4) {
+        animation-delay: 0.6s;
+      }
 
-        /* Button hover effects */
-        .hover-effect {
-            transition: all 0.2s ease;
-        }
-
-        .hover-effect:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(106, 90, 205, 0.3);
-        }
-
-        .sidebar-toggle:hover {
-            background: rgba(106, 90, 205, 0.05);
-        }
-
-        .project-input:hover {
-            border-color: #8a7bea;
-            box-shadow: 0 0 0 1px rgba(138, 123, 234, 0.2);
-        }
-
-        /* Mac traffic lights positioning */
-        .traffic-lights {
-            position: fixed;
-            top: 16px;
-            left: 48px;
-            z-index: 1000;
-            -webkit-app-region: no-drag;
-        }
-
-        /* Add this to your existing <style> section in index.html */
-        @keyframes dropAnimation {
-        0% {
-            transform: rotate(-5.914deg) translateY(-100px) scale(0.8);
-            opacity: 0;
+      @keyframes chartPulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scaleY(1);
         }
         50% {
-            transform: rotate(-5.914deg) translateY(10px) scale(1.05);
-            opacity: 1;
+          opacity: 0.7;
+          transform: scaleY(0.8);
+        }
+      }
+
+      /* Button hover effects */
+      .hover-effect {
+        transition: all 0.2s ease;
+      }
+
+      .hover-effect:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(106, 90, 205, 0.3);
+      }
+
+      .sidebar-toggle:hover {
+        background: rgba(106, 90, 205, 0.05);
+      }
+
+      .project-input:hover {
+        border-color: #8a7bea;
+        box-shadow: 0 0 0 1px rgba(138, 123, 234, 0.2);
+      }
+
+      /* Mac traffic lights positioning */
+      .traffic-lights {
+        position: fixed;
+        top: 16px;
+        left: 48px;
+        z-index: 1000;
+        -webkit-app-region: no-drag;
+      }
+
+      /* Add this to your existing <style> section in index.html */
+      @keyframes dropAnimation {
+        0% {
+          transform: rotate(-5.914deg) translateY(-100px) scale(0.8);
+          opacity: 0;
+        }
+        50% {
+          transform: rotate(-5.914deg) translateY(10px) scale(1.05);
+          opacity: 1;
         }
         100% {
-            transform: rotate(-5.914deg) translateY(0px) scale(1);
-            opacity: 1;
+          transform: rotate(-5.914deg) translateY(0px) scale(1);
+          opacity: 1;
         }
-        }
+      }
 
-        @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
+        to {
+          opacity: 1;
+        }
+      }
 
-        .drag-over {
+      .drag-over {
         background: #e5e3f7 !important;
         border-color: #6a5acd !important;
         transform: scale(1.02);
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root"></div>
     <script src="./App.js"></script>
-</body>
+  </body>
 </html>

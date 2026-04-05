@@ -23,18 +23,14 @@ const ProjectHeader = ({ project }) => {
    * @returns {string} Formatted date
    */
   const formatDate = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Unknown date";
-    }
+    if (!dateString) return "—";
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return React.createElement(

@@ -46,8 +46,6 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await apiClient.registerUser(email, password);
-      setError(null);
-      // Show success hint inline
       setError(
         "__success__Registration successful! Please check your email to confirm your account.",
       );
@@ -68,143 +66,161 @@ const LoginPage = () => {
 
   return React.createElement(
     "div",
-    {
-      className:
-        "flex flex-col items-center justify-center w-full h-full font-noto",
-    },
+    { className: "flex flex-row w-full h-full font-noto" },
+
+    // ── Left panel: logo ──────────────────────────────────────────────────
     React.createElement(
       "div",
       {
         className:
-          "flex flex-col gap-3lg w-full max-w-[360px] bg-stat-white rounded-xl shadow-xl p-3xl",
+          "flex-1 min-w-0 bg-stat-primary-50 flex items-center justify-center p-4xl",
       },
-      [
+      React.createElement("img", {
+        src: "../assets/images/loginPic.svg",
+        alt: "StatSynergy login picture",
+        style: {
+          maxWidth: "383px",
+          width: "100%",
+          height: "auto",
+          objectFit: "contain",
+        },
+      }),
+    ),
+
+    // ── Right panel: login card ───────────────────────────────────────────
+    React.createElement(
+      "div",
+      {
+        className:
+          "flex-1 min-w-0 bg-stat-bg flex items-center justify-center p-4xl",
+      },
+
+      React.createElement(
+        "div",
+        {
+          className:
+            "bg-stat-white border border-stat-primary-100 rounded-md flex flex-col gap-4xl items-center px-3xl py-4xl w-full max-w-[360px]",
+        },
+
         // Title
         React.createElement(
           "div",
-          { key: "title", className: "flex flex-col gap-xs" },
-          [
-            React.createElement(
-              "h1",
-              {
-                key: "h1",
-                className: "text-xxl font-bold text-stat-font text-center",
-              },
-              "Welcome back",
-            ),
-            React.createElement(
-              "p",
-              {
-                key: "sub",
-                className: "text-sm text-stat-font-secondary text-center",
-              },
-              "Sign in or create a new account",
-            ),
-          ],
+          { className: "flex flex-col gap-xs items-center w-full" },
+          React.createElement(
+            "h1",
+            {
+              className:
+                "font-noto font-bold text-xxl text-stat-font text-center",
+            },
+            "Welcome back",
+          ),
+          React.createElement(
+            "p",
+            {
+              className:
+                "font-noto font-normal text-base text-stat-font-secondary text-center",
+            },
+            "Sign in or create a new account",
+          ),
         ),
 
-        // Email field
+        // Fields
         React.createElement(
           "div",
-          { key: "email-field", className: "flex flex-col gap-xs" },
-          [
+          { className: "flex flex-col gap-3md w-full" },
+
+          // Email
+          React.createElement(
+            "div",
+            { className: "flex flex-col gap-[6px] w-full" },
             React.createElement(
               "label",
               {
-                key: "label",
-                className: "text-sm font-medium text-stat-font",
+                className: "font-noto font-medium text-sm text-stat-font",
                 htmlFor: "login-email",
               },
               "Email",
             ),
             React.createElement("input", {
-              key: "input",
               id: "login-email",
               type: "email",
               value: email,
               onChange: (e) => setEmail(e.target.value),
               placeholder: "you@example.com",
-              className:
-                "w-full px-3md py-1sm rounded-2sm border border-stat-font-tertiary text-stat-font text-sm bg-stat-bg focus:outline-none focus:border-stat-primary transition-colors duration-150",
               disabled: loading,
+              className:
+                "w-full bg-stat-white border border-stat-primary-100 rounded-sm px-3md py-2sm font-noto font-normal text-sm text-stat-font placeholder:text-grey-400 focus:outline-none focus:border-stat-primary transition-colors",
             }),
-          ],
-        ),
+          ),
 
-        // Password field
-        React.createElement(
-          "div",
-          { key: "password-field", className: "flex flex-col gap-xs" },
-          [
+          // Password
+          React.createElement(
+            "div",
+            { className: "flex flex-col gap-[6px] w-full" },
             React.createElement(
               "label",
               {
-                key: "label",
-                className: "text-sm font-medium text-stat-font",
+                className: "font-noto font-medium text-sm text-stat-font",
                 htmlFor: "login-password",
               },
               "Password",
             ),
             React.createElement("input", {
-              key: "input",
               id: "login-password",
               type: "password",
               value: password,
               onChange: (e) => setPassword(e.target.value),
               placeholder: "••••••••",
               onKeyDown: (e) => e.key === "Enter" && handleLogin(),
-              className:
-                "w-full px-3md py-1sm rounded-2sm border border-stat-font-tertiary text-stat-font text-sm bg-stat-bg focus:outline-none focus:border-stat-primary transition-colors duration-150",
               disabled: loading,
+              className:
+                "w-full bg-stat-white border border-stat-primary-100 rounded-sm px-3md py-2sm font-noto font-normal text-sm text-stat-font placeholder:text-grey-400 focus:outline-none focus:border-stat-primary transition-colors",
             }),
-          ],
-        ),
-
-        // Feedback message
-        error &&
-          React.createElement(
-            "div",
-            {
-              key: "feedback",
-              className: `text-sm px-3md py-1sm rounded-2sm ${
-                isSuccess
-                  ? "bg-stat-success-50 text-stat-success-700 border border-stat-success"
-                  : "bg-stat-error-50 text-stat-error-700 border border-stat-error-200"
-              }`,
-            },
-            displayMessage,
           ),
+
+          // Feedback message
+          error &&
+            React.createElement(
+              "div",
+              {
+                className: `font-noto text-sm px-3md py-2sm rounded-sm ${
+                  isSuccess
+                    ? "bg-stat-success-50 text-stat-success-700 border border-stat-success"
+                    : "bg-stat-error-50 text-stat-error-700 border border-stat-error-200"
+                }`,
+              },
+              displayMessage,
+            ),
+        ),
 
         // Buttons
         React.createElement(
           "div",
-          { key: "buttons", className: "flex flex-col gap-1sm" },
-          [
-            React.createElement(
-              QPushButton,
-              {
-                key: "login-btn",
-                onClick: handleLogin,
-                disabled: loading,
-                variant: "primary",
-                className: "w-full",
-              },
-              loading ? "Please wait…" : "Log in",
-            ),
-            React.createElement(
-              QPushButton,
-              {
-                key: "register-btn",
-                onClick: handleRegister,
-                disabled: loading,
-                variant: "outline",
-                className: "w-full",
-              },
-              loading ? "Please wait…" : "Register",
-            ),
-          ],
+          { className: "flex flex-col gap-1sm w-full" },
+
+          React.createElement(
+            QPushButton,
+            {
+              variant: "primary",
+              onClick: handleLogin,
+              disabled: loading,
+              className: "w-full",
+            },
+            loading ? "Please wait…" : "Log in",
+          ),
+
+          React.createElement(
+            QPushButton,
+            {
+              variant: "outline",
+              onClick: handleRegister,
+              disabled: loading,
+              className: "w-full",
+            },
+            loading ? "Please wait…" : "Register",
+          ),
         ),
-      ],
+      ),
     ),
   );
 };

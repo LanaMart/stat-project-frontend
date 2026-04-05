@@ -20,7 +20,7 @@ const QPushButton = ({
   className = "",
 }) => {
   const baseStyles =
-    "h-9 px-3md py-2sm rounded flex items-center justify-center gap-1sm font-noto cursor-pointer transition-all duration-200";
+    "h-9 px-3md py-2sm rounded flex items-center justify-center gap-1sm font-noto font-bold cursor-pointer transition-all duration-200";
 
   const variantStyles = {
     primary: disabled

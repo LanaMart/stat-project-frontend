@@ -83,7 +83,7 @@ const TableView = ({
     "div",
     {
       "className":
-        "flex flex-col gap-3lg w-full h-full px-4xl pb-3xl overflow-hidden", // h-full + overflow-hidden для полного экрана
+        "flex flex-col gap-3lg w-full px-4xl pb-3xl",
       "data-component": "TableView",
     },
     [
@@ -146,7 +146,7 @@ const TableView = ({
         {
           key: "table-container",
           className:
-            "tableContainer border border-stat-primary-50 rounded-2sm overflow-auto flex-1 custom-scrollbar", // flex-1 + custom-scrollbar
+            "tableContainer border border-stat-primary-50 rounded-2sm overflow-x-auto w-full custom-scrollbar",
           style: {
             maxWidth: "100%",
           },
