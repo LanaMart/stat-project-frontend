@@ -10,7 +10,7 @@ StatSynergy is a statistical desktop web application built for analyzing and for
 
 StatSynergy is a start-up product that allows businesses to upload their raw data (CSV, XLSX), run statistical analysis through a guided step-by-step wizard, and receive actionable forecasting reports on growth and profitability.
 
-The application is powered by a proprietary backend that implements unique mathematical algorithms developed and owned by **Dr. of Engineering Elena Davcheva**. These algorithms are the intellectual core of StatSynergy and are not publicly available.
+The application is powered by a proprietary backend that implements unique mathematical algorithms developed and owned by a project colleague. These algorithms are the intellectual core of StatSynergy and are not publicly available.
 
 ---
 
@@ -32,7 +32,7 @@ The application is powered by a proprietary backend that implements unique mathe
 
 This frontend **requires the StatSynergy backend** to function. The backend lives in a separate, private repository and is covered by a **Non-Disclosure Agreement (NDA)**.
 
-The backend implements the proprietary mathematical and statistical algorithms that are the intellectual property of **Dr. of Engineering Elena Davcheva**. These algorithms are not open-source and are not included in this repository.
+The backend implements the proprietary mathematical and statistical algorithms that are the intellectual property of a project colleague. These algorithms are not open-source and are not included in this repository.
 
 ---
 
@@ -92,4 +92,4 @@ The packaged application will be output to the `dist/` directory.
 
 ## License
 
-The frontend code in this repository is provided for portfolio and demonstration purposes. The underlying statistical engine, mathematical models, and analytical algorithms are proprietary and protected under NDA. All intellectual property rights for the core algorithms belong to **Dr. of Engineering Elena Davcheva**.
+The frontend code in this repository is provided for portfolio and demonstration purposes. The underlying statistical engine, mathematical models, and analytical algorithms are proprietary and protected under NDA. All intellectual property rights for the core algorithms belong to a project colleague.
