@@ -28,7 +28,9 @@ const LoginPage = () => {
     } catch (err) {
       const msg = err?.message || String(err);
       if (msg.includes("not confirmed")) {
-        setError("Email not confirmed yet. Please check your inbox.");
+        setError(
+          "Email not confirmed yet. Please check your inbox blah blah blah.",
+        );
       } else {
         setError(msg || "Login failed.");
       }
