@@ -56,6 +56,10 @@ The backend implements the proprietary mathematical and statistical algorithms t
 
 ![Step 1 of the analysis wizard: reviewing uploaded data and selecting relevant columns with data-type dropdowns](assets/images/screenshot-step1.png)
 
+### Step 2 — Analysis Goal Selection
+
+![Step 2 of the analysis wizard: choosing what to learn from the data — correlation, prediction, comparison, anomaly detection, clustering, or time-series](assets/images/screenshot-step2.png)
+
 ---
 
 ## Getting Started
